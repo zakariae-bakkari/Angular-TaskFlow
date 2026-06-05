@@ -1,6 +1,6 @@
 export interface Task{
     id:number;
-    projectId:number;
+    projectId?:number;
     title:string;
     description?:string;
     status: 'todo' | 'in-progress' | 'done';

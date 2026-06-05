@@ -17,9 +17,9 @@ const DB: database = {
   // and testing. Never store plaintext passwords in production. Use a backend
   // service with proper password hashing and secure authentication.
   tasks: [
-    { id: 1, title: 'Configurer le projet', status: 'done', priority: 'high', assigneeId: 1, dueDate: '2025-05-01' },
-    { id: 2, title: 'Créer les composants', status: 'in-progress', priority: 'high', assigneeId: 2, dueDate: '2025-05-10' },
-    { id: 3, title: 'Rédiger les tests', status: 'todo', priority: 'medium', assigneeId: 1, dueDate: '2025-05-20' },
+    { id: 1, projectId: 1, title: 'Configurer le projet', status: 'done', priority: 'high', assigneeId: 1, dueDate: '2025-05-01' },
+    { id: 2, projectId: 1, title: 'Créer les composants', status: 'in-progress', priority: 'high', assigneeId: 2, dueDate: '2025-05-10' },
+    { id: 3, projectId: 1, title: 'Rédiger les tests', status: 'todo', priority: 'medium', assigneeId: 1, dueDate: '2025-05-20' },
   ]
 };
 
