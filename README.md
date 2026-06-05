@@ -4,13 +4,36 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Development server
 
-To start a local development server, run:
+### Running Frontend + Backend (Recommended)
+
+To start both the **frontend** (Angular dev server on port 4200) and **backend** (json-server simulation on port 3000), run:
+
+```bash
+pnpm run dev
+```
+
+Or with npm:
+
+```bash
+npm run dev
+```
+
+This will launch:
+
+- **Backend**: json-server on `http://127.0.0.1:3000` (simulates API endpoints)
+- **Frontend**: Angular dev server on `http://127.0.0.1:4200` with proxy to backend
+
+Once running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+### Running Frontend Only
+
+If you need to run just the Angular dev server:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+**Note:** If running the frontend only without the backend, API requests will fail with `ECONNREFUSED` errors. Make sure to use `pnpm run dev` to start both services.
 
 ## Code scaffolding
 
