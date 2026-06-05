@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 console.log('🚀 Démarrage de TaskFlow (Frontend + Backend)...');
 
 // Start json-server on port 3000
-const backend = spawn('npx', ['json-server', 'db.json', '--port', '3000', '--host', '127.0.0.1'], {
+const backend = spawn('npx', ['-y', 'json-server', 'db.json', '--port', '3000', '--host', '127.0.0.1'], {
   shell: true,
   stdio: 'inherit'
 });
