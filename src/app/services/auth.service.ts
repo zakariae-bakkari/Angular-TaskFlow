@@ -8,7 +8,7 @@ import { User } from '../user.model';
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3000/users';
+  private readonly apiUrl = 'http://127.0.0.1:3000/users';
 
   // Session signal
   private readonly _currentUser = signal<User | null>(null);

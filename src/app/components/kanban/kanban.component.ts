@@ -38,7 +38,7 @@ export class KanbanComponent implements OnInit {
     this.error.set(null);
 
     // Fetch tasks assigned to the current user
-    this.http.get<Task[]>(`http://localhost:3000/tasks?assigneeId=${user.id}`).subscribe({
+    this.http.get<Task[]>(`http://127.0.0.1:3000/tasks?assigneeId=${user.id}`).subscribe({
       next: (data) => {
         this.tasks.set(data);
         this.isLoading.set(false);
