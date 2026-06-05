@@ -10,7 +10,6 @@
     "serve:ssr:TaskFlow-Angular": "node dist/TaskFlow-Angular/server/server.mjs"
   },
   "private": true,
-  "packageManager": "npm@11.6.2",
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
