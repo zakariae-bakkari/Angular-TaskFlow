@@ -1,0 +1,259 @@
+<div class="dashboard-layout">
+  <!-- HEADER -->
+  <header class="dashboard-header">
+    <div class="header-brand">
+      <div class="logo-circle-small">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="logo-icon-small">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m12 .5a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h1>TaskFlow</h1>
+    </div>
+    
+    <div class="header-actions">
+      @if (authService.currentUser(); as user) {
+        <div class="user-profile">
+          <div class="avatar">{{ user.name ? user.name[0].toUpperCase() : 'U' }}</div>
+          <div class="user-details">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+        </div>
+      }
+      <button (click)="logout()" class="btn-logout">
+        <svg xmlns="http://www.w3.org/2000/svg" class="logout-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="dashboard-main">
+    <div class="page-title-section">
+      <div>
+        <h2>Mes Projets JIRA</h2>
+        <p>Gérez vos différents projets, collaborez en équipe et accédez à vos tableaux Kanban.</p>
+      </div>
+      <button (click)="openCreateModal()" class="btn-create-project">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="icon-plus">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span>Nouveau Projet</span>
+      </button>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <p>{{ errorMessage() }}</p>
+      </div>
+    }
+
+    <!-- PROJECTS GRID -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <span class="spinner-large"></span>
+        <p>Chargement de vos projets...</p>
+      </div>
+    } @else {
+      <div class="projects-grid">
+        @for (project of projects(); track project.id) {
+          <div class="project-card" (click)="navigateToBoard(project.id)">
+            <div class="project-card-header">
+              <div class="project-avatar">
+                {{ project.name[0].toUpperCase() }}
+              </div>
+              <div class="project-meta">
+                <h3>{{ project.name }}</h3>
+                <span class="role-badge" [class.badge-owner]="isOwner(project)">
+                  {{ isOwner(project) ? 'Propriétaire' : 'Membre' }}
+                </span>
+              </div>
+            </div>
+            
+            <p class="project-description">{{ project.description || 'Aucune description fournie.' }}</p>
+
+            <div class="project-card-actions">
+              <button class="card-btn-action" title="Membres" (click)="openMembersModal(project, $event)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
+                <span>Membres</span>
+              </button>
+
+              @if (isOwner(project)) {
+                <button class="card-btn-action text-edit" title="Modifier" (click)="openEditModal(project, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                </button>
+                <button class="card-btn-action text-delete" title="Supprimer" (click)="onDeleteProject(project.id, $event)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="empty-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3>Aucun projet actif</h3>
+            <p>Créez votre premier projet ou demandez à être invité sur un projet existant.</p>
+            <button (click)="openCreateModal()" class="btn-create-project mt-4">
+              <span>Créer un Projet</span>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- MODAL: CREATE PROJECT -->
+  @if (showCreateModal()) {
+    <div class="modal-overlay" (click)="closeCreateModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Nouveau Projet</h3>
+          <button class="btn-close" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <form [formGroup]="projectForm" (ngSubmit)="onCreateProject()" class="modal-form">
+          <div class="form-group">
+            <label for="new-name">Nom du projet</label>
+            <input id="new-name" type="text" formControlName="name" placeholder="Ex: Portail Client" />
+            @if (projectForm.get('name')?.touched && projectForm.get('name')?.invalid) {
+              <span class="error-text">Le nom doit faire au moins 3 caractères.</span>
+            }
+          </div>
+          <div class="form-group">
+            <label for="new-desc">Description</label>
+            <textarea id="new-desc" formControlName="description" rows="3" placeholder="Description du projet..."></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeCreateModal()">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="projectForm.invalid">Créer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: EDIT PROJECT -->
+  @if (showEditModal()) {
+    <div class="modal-overlay" (click)="closeEditModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Modifier le Projet</h3>
+          <button class="btn-close" (click)="closeEditModal()">&times;</button>
+        </div>
+        <form [formGroup]="editProjectForm" (ngSubmit)="onEditProject()" class="modal-form">
+          <div class="form-group">
+            <label for="edit-name">Nom du projet</label>
+            <input id="edit-name" type="text" formControlName="name" />
+            @if (editProjectForm.get('name')?.touched && editProjectForm.get('name')?.invalid) {
+              <span class="error-text">Le nom doit faire au moins 3 caractères.</span>
+            }
+          </div>
+          <div class="form-group">
+            <label for="edit-desc">Description</label>
+            <textarea id="edit-desc" formControlName="description" rows="3"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeEditModal()">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="editProjectForm.invalid">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: MEMBERS & ROLES -->
+  @if (showMembersModal()) {
+    <div class="modal-overlay" (click)="closeMembersModal()">
+      <div class="modal-card modal-large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Membres de : {{ activeProject()?.name }}</h3>
+          <button class="btn-close" (click)="closeMembersModal()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          @if (memberErrorMessage()) {
+            <div class="alert alert-error mb-4">
+              <span>{{ memberErrorMessage() }}</span>
+            </div>
+          }
+
+          <!-- ADD MEMBER FORM (Only for owner/admin) -->
+          @if (activeProject(); as proj) {
+            @if (isOwner(proj)) {
+              <div class="add-member-section">
+                <h4>Ajouter un collaborateur</h4>
+                <div class="add-member-grid">
+                  <div class="form-group flex-1">
+                    <input type="email" [(ngModel)]="inviteEmail" placeholder="adresse@email.com" class="input-invite" />
+                  </div>
+                  <div class="form-group">
+                    <select [(ngModel)]="inviteRole" class="select-role">
+                      <option value="Admin">Administrateur</option>
+                      <option value="Collaborator">Collaborateur</option>
+                      <option value="Viewer">Spectateur</option>
+                    </select>
+                  </div>
+                  <button (click)="onAddMember()" class="btn-primary flex-shrink" [disabled]="!inviteEmail">Inviter</button>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- MEMBERS LIST -->
+          <div class="members-list-wrapper">
+            <h4>Membres actuels ({{ projectMembers().length }})</h4>
+            @if (isMembersLoading()) {
+              <div class="members-loading">
+                <span class="spinner"></span>
+                <p>Chargement des membres...</p>
+              </div>
+            } @else {
+              <div class="members-list">
+                @for (member of projectMembers(); track member.id) {
+                  <div class="member-item">
+                    <div class="member-item-info">
+                      <div class="member-avatar">{{ member.userName ? member.userName[0].toUpperCase() : 'U' }}</div>
+                      <div>
+                        <span class="member-name">{{ member.userName }}</span>
+                        <span class="member-email">{{ member.userEmail }}</span>
+                      </div>
+                    </div>
+
+                    <div class="member-item-actions">
+                      @if (activeProject(); as proj) {
+                        <!-- Owners can modify roles, others just view -->
+                        @if (isOwner(proj) && member.role !== 'Owner') {
+                          <select [ngModel]="member.role" (ngModelChange)="onChangeRole(member, $event)" class="select-role-small">
+                            <option value="Admin">Admin</option>
+                            <option value="Collaborator">Collab</option>
+                            <option value="Viewer">Viewer</option>
+                          </select>
+                          <button class="btn-remove-member" (click)="onRemoveMember(member)" title="Retirer du projet">
+                            &times;
+                          </button>
+                        } @else {
+                          <span class="badge" [class.badge-owner]="member.role === 'Owner'">
+                            {{ member.role }}
+                          </span>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

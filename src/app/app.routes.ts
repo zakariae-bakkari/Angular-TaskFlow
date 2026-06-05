@@ -14,17 +14,22 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
   {
-    path: 'kanban',
+    path: 'projects',
+    loadComponent: () => import('./components/projects/projects.component').then(m => m.ProjectsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'projects/:projectId/kanban',
     loadComponent: () => import('./components/kanban/kanban.component').then(m => m.KanbanComponent),
     canActivate: [authGuard]
   },
   {
     path: '',
-    redirectTo: 'kanban',
+    redirectTo: 'projects',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'kanban'
+    redirectTo: 'projects'
   }
 ];

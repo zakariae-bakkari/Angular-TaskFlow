@@ -25,9 +25,56 @@
       "id": 4
     }
   ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Projet Alpha",
+      "description": "Développement initial du portail TaskFlow",
+      "ownerId": 1
+    },
+    {
+      "name": "xploreia",
+      "description": null,
+      "ownerId": 4,
+      "id": 2
+    }
+  ],
+  "projectMembers": [
+    {
+      "id": 1,
+      "projectId": 1,
+      "userId": 1,
+      "role": "Owner"
+    },
+    {
+      "id": 2,
+      "projectId": 1,
+      "userId": 2,
+      "role": "Collaborator"
+    },
+    {
+      "id": 3,
+      "projectId": 1,
+      "userId": 3,
+      "role": "Viewer"
+    },
+    {
+      "projectId": 2,
+      "userId": 4,
+      "role": "Owner",
+      "id": 4
+    },
+    {
+      "projectId": 2,
+      "userId": 1,
+      "role": "Collaborator",
+      "id": 5
+    }
+  ],
   "tasks": [
     {
       "id": 1,
+      "projectId": 1,
       "title": "Configurer le projet",
       "status": "done",
       "priority": "high",
@@ -36,6 +83,7 @@
     },
     {
       "id": 2,
+      "projectId": 1,
       "title": "Créer les composants",
       "status": "in-progress",
       "priority": "high",
@@ -44,6 +92,7 @@
     },
     {
       "id": 3,
+      "projectId": 1,
       "title": "Rédiger les tests",
       "status": "todo",
       "priority": "medium",

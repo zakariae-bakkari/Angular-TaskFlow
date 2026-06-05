@@ -10,6 +10,6 @@ export const guestGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Already logged in, redirect to main/kanban board
-  return router.createUrlTree(['/kanban']);
+  // Already logged in, redirect to projects overview
+  return router.createUrlTree(['/projects']);
 };
