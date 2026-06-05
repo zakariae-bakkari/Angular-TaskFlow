@@ -1,12 +1,20 @@
 <div class="dashboard-layout">
   <header class="dashboard-header">
     <div class="header-brand">
+      <a routerLink="/projects" class="btn-back" title="Retour aux projets">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </a>
       <div class="logo-circle-small">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="logo-icon-small">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m12 .5a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h1>TaskFlow</h1>
+      <h1>TaskFlow : {{ project()?.name }}</h1>
+      @if (userRole()) {
+        <span class="role-badge">{{ userRole() }}</span>
+      }
     </div>
     
     <div class="header-actions">
@@ -30,19 +38,19 @@
 
   <main class="dashboard-main">
     <div class="welcome-banner">
-      <h2>Ravi de vous revoir, {{ authService.currentUser()?.name }} ! 👋</h2>
-      <p>Voici un aperçu de vos tâches actuelles dans le tableau de bord.</p>
+      <h2>Tableau Kanban : {{ project()?.name }}</h2>
+      <p>{{ project()?.description || 'Gestion des tâches du projet.' }}</p>
     </div>
 
     @if (isLoading()) {
       <div class="loading-state">
         <span class="spinner-large"></span>
-        <p>Chargement de vos tâches...</p>
+        <p>Chargement des tâches...</p>
       </div>
     } @else if (error()) {
       <div class="error-banner">
         <p>{{ error() }}</p>
-        <button (click)="fetchTasks()" class="btn-retry">Réessayer</button>
+        <button (click)="fetchTasks(projectId()!)" class="btn-retry">Réessayer</button>
       </div>
     } @else {
       <div class="kanban-board">
