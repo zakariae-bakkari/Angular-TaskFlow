@@ -1,0 +1,81 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="logo-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m12 .5a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h2>TaskFlow</h2>
+      <p class="subtitle">Gérez vos tâches en toute simplicité</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="alert-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="email">Adresse Email</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+          </svg>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="nom@exemple.com"
+            [class.input-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+          />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']) {
+          <span class="error-text">L'email est requis.</span>
+        }
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['email']) {
+          <span class="error-text">Veuillez entrer une adresse email valide.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.input-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+          />
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
+          <span class="error-text">Le mot de passe est requis.</span>
+        }
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['minlength']) {
+          <span class="error-text">Le mot de passe doit faire au moins 6 caractères.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          <span>Connexion en cours...</span>
+        } @else {
+          <span>Se connecter</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Nouveau sur TaskFlow ? <a routerLink="/register">Créer un compte</a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,125 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="logo-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+      </div>
+      <h2>Créer un compte</h2>
+      <p class="subtitle">Rejoignez TaskFlow et organisez vos projets</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="alert-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="name">Nom Complet</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Ex: Jean Dupont"
+            [class.input-invalid]="registerForm.get('name')?.touched && registerForm.get('name')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('name')?.touched && registerForm.get('name')?.errors?.['required']) {
+          <span class="error-text">Le nom est requis.</span>
+        }
+        @if (registerForm.get('name')?.touched && registerForm.get('name')?.errors?.['minlength']) {
+          <span class="error-text">Le nom doit faire au moins 2 caractères.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Adresse Email</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+          </svg>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="nom@exemple.com"
+            [class.input-invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']) {
+          <span class="error-text">L'email est requis.</span>
+        }
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']) {
+          <span class="error-text">Veuillez entrer une adresse email valide.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="Min. 6 caractères"
+            [class.input-invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']) {
+          <span class="error-text">Le mot de passe est requis.</span>
+        }
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['minlength']) {
+          <span class="error-text">Le mot de passe doit faire au moins 6 caractères.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Confirmez votre mot de passe"
+            [class.input-invalid]="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid"
+          />
+        </div>
+        @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.errors?.['required']) {
+          <span class="error-text">La confirmation du mot de passe est requise.</span>
+        }
+        @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.errors?.['passwordMismatch']) {
+          <span class="error-text">Les mots de passe ne correspondent pas.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          <span>Inscription...</span>
+        } @else {
+          <span>S'inscrire</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+    </div>
+  </div>
+</div>
