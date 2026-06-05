@@ -1,0 +1,21 @@
+# Liste des Tâches - Projet Angular TaskFlow
+
+Ce document détaille l'ensemble des tâches fonctionnelles et techniques extraites du document de spécifications du projet, structurées avec leur niveau de priorité, le nom de la branche Git correspondante, les descriptions et les attributions de développement.
+
+| N° Tâche | Domaine / Catégorie | Priorité MoSCoW | Branche Git | Description & Contraintes | Assigné | Statut |
+| :---: | :--- | :---: | :--- | :--- | :--- | :---: |
+| **T01** | Navigation | **MUST** | `feat/navigation-router` | Configurer la navigation lazy-loaded avec Angular Router (`/kanban`, `/statistics`, `/tasks/:id`, redirections, barre de navigation persistante avec onglet actif). | Zakariae Bakkari | A faire |
+| **T02** | Gestion des Tâches | **MUST** | `feat/kanban-board` | Afficher les tâches réparties sur les 3 colonnes Kanban fonctionnelles ('À faire', 'En cours', 'Terminé'). Afficher le badge de priorité et le nombre de tâches dans l'en-tête de chaque colonne. | Meriem Hamri | A faire |
+| **T03** | Gestion des Tâches | **MUST** | `feat/task-validation` | Configurer la validation réactive pour le formulaire de tâches : Titre (3 à 200 caractères), Description (max 1000), Date d'échéance (>= aujourd'hui), sélection de l'assigné, max 5 étiquettes. | Sara Alami | A faire |
+| **T04** | Gestion des Tâches | **MUST** | `feat/task-creation` | Implémenter le formulaire et l'action de création d'une nouvelle tâche. Le statut initial de la tâche doit être configuré par défaut à 'À faire'. | Sara Alami | A faire |
+| **T05** | Gestion des Tâches | **MUST** | `feat/task-modification` | Implémenter le bouton "Modifier" sur les cartes tâches et ouvrir le formulaire réactif pré-rempli. Mettre à jour automatiquement la date `updatedAt` lors de l'enregistrement. | Meriem Hamri | A faire |
+| **T06** | Gestion des Tâches | **MUST** | `feat/task-deletion` | Implémenter l'action de suppression d'une tâche avec demande de confirmation explicite. La suppression doit être reflétée instantanément sans recharger la page. | Zakariae Bakkari | A faire |
+| **T07** | Filtrage & Recherche | **SHOULD** | `feat/filter-priority` | Implémenter le filtrage multicritères permettant de sélectionner une ou plusieurs priorités (Haute / Moyenne / Basse) simultanément. | Meriem Hamri | A faire |
+| **T08** | Filtrage & Recherche | **SHOULD** | `feat/filter-assignee` | Implémenter la sélection d'un membre assigné spécifique dans une liste déroulante pour filtrer le tableau Kanban. | Zakariae Bakkari | A faire |
+| **T09** | Statistiques | **SHOULD** | `feat/statistics-page` | Créer la page de statistiques (`/statistics`) affichant le taux d'avancement global, la liste des tâches en retard, et le membre ayant le plus de tâches en cours. | Sara Alami | A faire |
+| **T10** | Gestion des Tâches | **SHOULD** | `feat/drag-drop` | Mettre en place le déplacement de tâches par Glisser-Déposer (Drag & Drop) à l'aide d'Angular CDK, tout en maintenant les boutons directionnels sur les cartes. | Zakariae Bakkari | A faire |
+| **T11** | Filtrage & Recherche | **COULD** | `feat/text-search` | Intégrer une barre de recherche textuelle filtrant les tâches par leur titre (insensible à la casse, combinable avec les filtres par priorité/assigné). | Meriem Hamri | A faire |
+| **T12** | Navigation | **COULD** | `feat/page-404` | Concevoir une page 404 (Not Found) personnalisée et soignée pour rediriger tout utilisateur accédant à une route invalide. | Sara Alami | A faire |
+| **T13** | Base de Données | **COULD** | `feat/json-server-persistence` | Connecter l'application client à l'API simulée `json-server` pour persister toutes les modifications des tâches et utilisateurs. | Zakariae Bakkari | A faire |
+| **T14** | Statistiques | **COULD** | `feat/statistics-charts` | Intégrer un graphique circulaire ou à barres (avec Chart.js ou SVG personnalisés) pour représenter visuellement la répartition des tâches par statut et par priorité. | Sara Alami | A faire |
+| **T15** | Authentification | **MUST** | `feat/auth-system` | Implémenter l'authentification sécurisée (login, inscription, guards, persistance session) avec communication de données JSON. | Zakariae Bakkari | **Terminé** |
