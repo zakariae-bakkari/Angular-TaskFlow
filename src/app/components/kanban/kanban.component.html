@@ -43,6 +43,36 @@
           </div>
         </div>
       }
+      <div class="notif-container">
+        <button class="btn-profile" (click)="toggleNotifications()" aria-haspopup="true" [attr.aria-expanded]="showNotifications()">
+          Notifications
+          <span *ngIf="unreadCount() > 0" class="notif-badge">{{ unreadCount() }}</span>
+        </button>
+        <div *ngIf="showNotifications()" class="notif-dropdown" role="menu">
+          <div class="notif-dropdown-header">
+            <strong>Notifications</strong>
+            <button class="btn-small" (click)="markAllRead()">Marquer tout lu</button>
+          </div>
+          <div class="notif-scroll">
+            <ul class="notif-list">
+              <li *ngFor="let n of notificationsList()" class="notif-row" [class.unread]="!n.read">
+                <div class="notif-left">
+                  <div class="notif-avatar">{{ n.title?.[0] || 'N' }}</div>
+                </div>
+                <div class="notif-body">
+                  <div class="notif-title">{{ n.title }}</div>
+                  <div class="notif-msg" title="{{ n.message }}">{{ n.message }}</div>
+                  <div class="notif-meta">{{ n.createdAt | date:'short' }}</div>
+                </div>
+                <div class="notif-actions">
+                  <button class="btn-icon" (click)="$event.stopPropagation(); markNotificationRead(n.id)" title="Marquer lu">✓</button>
+                </div>
+              </li>
+            </ul>
+            <div *ngIf="notificationsList().length === 0" class="notif-empty">Aucune notification.</div>
+          </div>
+        </div>
+      </div>
       <button (click)="logout()" class="btn-logout" title="Se déconnecter">
         Déconnexion
       </button>

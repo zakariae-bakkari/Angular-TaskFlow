@@ -43,12 +43,6 @@
       "description": "test",
       "ownerId": 1,
       "id": 5
-    },
-    {
-      "name": "test3",
-      "description": "test3",
-      "ownerId": 4,
-      "id": 6
     }
   ],
   "projectMembers": [
@@ -87,12 +81,6 @@
       "userId": 1,
       "role": "Owner",
       "id": 8
-    },
-    {
-      "projectId": 6,
-      "userId": 4,
-      "role": "Owner",
-      "id": 9
     }
   ],
   "tasks": [
@@ -137,30 +125,6 @@
       "createdAt": "2026-06-06T13:43:32.419Z",
       "updatedAt": "2026-06-06T14:34:49.012Z",
       "id": 4
-    },
-    {
-      "projectId": 2,
-      "title": "test",
-      "description": "test",
-      "priority": "high",
-      "dueDate": "2026-06-19",
-      "assigneeId": 4,
-      "status": "todo",
-      "createdAt": "2026-06-06T14:29:45.546Z",
-      "updatedAt": "2026-06-06T14:34:38.861Z",
-      "id": 5
-    },
-    {
-      "projectId": 6,
-      "title": "test",
-      "description": "test",
-      "priority": "high",
-      "dueDate": "2026-06-19",
-      "assigneeId": 4,
-      "status": "todo",
-      "createdAt": "2026-06-06T14:47:06.990Z",
-      "updatedAt": "2026-06-06T14:47:16.308Z",
-      "id": 6
     }
   ]
 }

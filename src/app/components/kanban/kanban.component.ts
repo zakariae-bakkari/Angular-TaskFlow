@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
+import { NotificationService } from '../../services/notification.service';
 import { HttpClient } from '@angular/common/http';
 import { Task } from '../../task.model';
 import { Project, ProjectMember } from '../../project.model';
@@ -24,6 +25,7 @@ export class KanbanComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  private readonly notificationService = inject(NotificationService);
 
   // States
   protected readonly projectId = signal<number | null>(null);
@@ -43,7 +45,59 @@ export class KanbanComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly projectMembers = signal<ProjectMember[]>([]);
   protected readonly editingTaskId = signal<number | null>(null);
+  protected readonly originalAssigneeId = signal<number | null>(null);
   protected readonly draggingTaskId = signal<number | null>(null);
+  protected readonly unreadCount = computed(() => {
+    return this.notificationsList().filter(n => !n.read).length;
+  });
+  protected readonly showNotifications = signal<boolean>(false);
+  protected readonly notificationsList = signal<any[]>([]);
+
+  toggleNotifications(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const next = !this.showNotifications();
+    this.showNotifications.set(next);
+    if (next) {
+      // load notifications and enrich messages with project names when possible
+      const notes = this.notificationService.getNotificationsForUser(user.id) || [];
+      this.notificationsList.set(notes);
+      const idRegex = /projet\s+"(\d+)"/i;
+      notes.forEach(n => {
+        const m = (n.message || '').match(idRegex);
+        if (m && m[1]) {
+          const pid = Number(m[1]);
+          this.projectService.getProjectById(pid).subscribe({
+            next: proj => {
+              if (proj && proj.name) {
+                const updated = this.notificationsList().map(item => item.id === n.id ? { ...item, message: (n.message || '').replace(idRegex, `projet \"${proj.name}\"`) } : item);
+                this.notificationsList.set(updated);
+              }
+            },
+            error: () => { /* ignore */ }
+          });
+        }
+      });
+    }
+  }
+
+  markNotificationRead(id: string): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    // update local view first (preserve enriched messages)
+    this.notificationsList.set(this.notificationsList().map(n => n.id === id ? { ...n, read: true } : n));
+    // persist
+    this.notificationService.markAsRead(user.id, id);
+  }
+
+  markAllRead(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    // update local view first
+    this.notificationsList.set(this.notificationsList().map(n => ({ ...n, read: true })));
+    // persist
+    this.notificationService.markAllRead(user.id);
+  }
 
   // Active Tab
   protected readonly activeTab = signal<'board' | 'stats' | 'team'>('board');
@@ -125,6 +179,12 @@ export class KanbanComponent implements OnInit {
     } else {
       this.router.navigate(['/projects']);
     }
+    // preload global notifications so unreadCount is accurate immediately
+    const user = this.authService.currentUser();
+    if (user) {
+      const notes = this.notificationService.getNotificationsForUser(user.id) || [];
+      this.notificationsList.set(notes);
+    }
   }
 
   get minDate(): string {
@@ -157,6 +217,7 @@ export class KanbanComponent implements OnInit {
     });
   }
 
+
   fetchUserRole(pId: number): void {
     const user = this.authService.currentUser();
     if (user) {
@@ -169,6 +230,7 @@ export class KanbanComponent implements OnInit {
     }
   }
 
+  // Create task flow (only Owner)
   fetchTasks(pId: number): void {
     this.isLoading.set(true);
     this.error.set(null);
@@ -201,6 +263,7 @@ export class KanbanComponent implements OnInit {
     const role = this.userRole();
     if (!(role === 'Owner' || role === 'Admin' || role === 'Collaborator')) return;
     this.editingTaskId.set(null);
+    this.originalAssigneeId.set(null);
     this.taskForm.reset({ title: '', description: '', priority: 'medium', dueDate: '', assignee: null });
     this.showCreateModal.set(true);
   }
@@ -249,6 +312,15 @@ export class KanbanComponent implements OnInit {
           this.showCreateModal.set(false);
           this.editingTaskId.set(null);
           this.fetchTasks(pId);
+          // Notify new assignee if changed
+          const newAssignee = assignee || null;
+          const oldAssignee = this.originalAssigneeId();
+          if (newAssignee && newAssignee !== oldAssignee) {
+            try {
+              const projName = this.project()?.name ?? String(pId);
+              this.notificationService.addNotification(newAssignee, 'Nouvelle tâche assignée', `Une tâche vous a été assignée dans le projet "${projName}"`);
+            } catch (e) { /* ignore */ }
+          }
         },
         error: (err: any) => {
           console.error('Error updating task:', err);
@@ -270,6 +342,13 @@ export class KanbanComponent implements OnInit {
           this.isSaving.set(false);
           this.showCreateModal.set(false);
           this.fetchTasks(pId);
+          // Notify assignee if assigned to someone else
+          if (assignee && this.authService.currentUser()?.id !== assignee) {
+            try {
+              const projName = this.project()?.name ?? String(pId);
+              this.notificationService.addNotification(assignee, 'Tâche assignée', `Une nouvelle tâche vous a été assignée dans le projet "${projName}"`);
+            } catch (e) { /* ignore */ }
+          }
         },
         error: (err: any) => {
           console.error('Error creating task:', err);
@@ -284,6 +363,7 @@ export class KanbanComponent implements OnInit {
     const role = this.userRole();
     if (!(role === 'Owner' || role === 'Admin' || role === 'Collaborator')) return;
     this.editingTaskId.set(task.id);
+    this.originalAssigneeId.set(task.assigneeId || null);
     this.taskForm.reset({
       title: task.title,
       description: task.description || '',

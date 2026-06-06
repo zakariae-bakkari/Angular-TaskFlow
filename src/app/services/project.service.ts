@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { Project, ProjectMember } from '../project.model';
+import { NotificationService } from './notification.service';
 import { User } from '../user.model';
 
 @Injectable({
@@ -10,6 +11,7 @@ import { User } from '../user.model';
 })
 export class ProjectService {
   private readonly http = inject(HttpClient);
+  private readonly notificationService = inject(NotificationService);
   private readonly projectsUrl = '/api/projects';
   private readonly membersUrl = '/api/projectMembers';
   private readonly usersUrl = '/api/users';
@@ -130,11 +132,29 @@ export class ProjectService {
               role
             };
             return this.http.post<ProjectMember>(this.membersUrl, newMember).pipe(
-              map(member => ({
-                ...member,
-                userName: user.name,
-                userEmail: user.email
-              }))
+              switchMap(member => {
+                // Fetch project name and notify invited user that they were added to a project
+                return this.getProjectById(projectId).pipe(
+                  map(proj => {
+                    try {
+                      const projName = proj?.name ?? String(projectId);
+                      this.notificationService.addNotification(user.id, 'Invitation au projet', `Vous avez été invité au projet "${projName}" en tant que ${role}`);
+                    } catch (e) {
+                      // ignore
+                    }
+                    return {
+                      ...member,
+                      userName: user.name,
+                      userEmail: user.email
+                    };
+                  }),
+                  catchError(() => of({
+                    ...member,
+                    userName: user.name,
+                    userEmail: user.email
+                  }))
+                );
+              })
             );
           })
         );
