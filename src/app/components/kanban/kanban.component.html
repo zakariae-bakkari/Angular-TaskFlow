@@ -1,18 +1,42 @@
 <div class="dashboard-layout">
+  <!-- HEADER -->
   <header class="dashboard-header">
     <div class="header-brand">
-      <a routerLink="/projects" class="btn-back" title="Retour aux projets">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="back-icon"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <a routerLink="/projects" class="btn-logo" title="TaskFlow Home">
+        <span class="logo-box">T</span>
+        <span class="brand-text">TaskFlow</span>
       </a>
-      <div class="logo-circle-small"></div>
-      <h1>TaskFlow : {{ project()?.name }}</h1>
-      <span *ngIf="userRole()" class="role-badge">{{ userRole() }}</span>
+      
+      <!-- NAV TABS -->
+      <nav class="header-nav">
+        <button 
+          class="nav-tab" 
+          [class.active]="activeTab() === 'board'" 
+          (click)="activeTab.set('board')">
+          Tableau
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeTab() === 'stats'" 
+          (click)="activeTab.set('stats')">
+          Statistiques
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="activeTab() === 'team'" 
+          (click)="activeTab.set('team')">
+          Équipe
+        </button>
+      </nav>
     </div>
 
+    <!-- USER PROFILE / LOGOUT -->
     <div class="header-actions">
       @if (authService.currentUser(); as user) {
         <div class="user-profile">
-          <div class="avatar">{{ (user.name ? user.name[0] : 'U') | uppercase }}</div>
+          <div class="avatar" title="{{ user.name }}">
+            {{ (user.name ? user.name[0] : 'U') | uppercase }}
+          </div>
           <div class="user-details">
             <span class="user-name">{{ user.name }}</span>
             <span class="user-email">{{ user.email }}</span>
@@ -50,161 +74,510 @@
         </div>
       </div>
       <button (click)="logout()" class="btn-logout">Déconnexion</button>
+      <button (click)="logout()" class="btn-logout" title="Se déconnecter">
+        Déconnexion
+      </button>
     </div>
   </header>
 
+  <!-- MAIN AREA -->
   <main class="dashboard-main">
-    <div class="welcome-banner">
-      <h2>Tableau Kanban : {{ project()?.name }}</h2>
-      <p>{{ project()?.description || 'Gestion des tâches du projet.' }}</p>
-      <button *ngIf="userRole() === 'Owner' || userRole() === 'Admin'" (click)="openCreateModal()" class="btn-create" aria-haspopup="dialog" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        <span class="btn-label">Créer une tâche</span>
-      </button>
+    
+    <!-- SUB-HEADER (Project details) -->
+    <div class="project-info-bar">
+      <div class="info-left">
+        <h2>{{ project()?.name }}</h2>
+        <p class="project-meta-info">
+          {{ totalTasksCount() }} tâches &middot; {{ projectMembers().length }} membres
+        </p>
+      </div>
+
+      <!-- BOARD TAB CONTROLS (Only visible in board tab) -->
+      @if (activeTab() === 'board') {
+        <div class="board-top-actions">
+          <!-- PRIORITY FILTER PILLS -->
+          <div class="filter-pills">
+            <button 
+              class="pill-filter btn-all" 
+              [class.active]="selectedPriority() === 'all'" 
+              (click)="setPriorityFilter('all')">
+              Toutes
+            </button>
+            <button 
+              class="pill-filter btn-high" 
+              [class.active]="selectedPriority() === 'high'" 
+              (click)="setPriorityFilter('high')">
+              Haute
+            </button>
+            <button 
+              class="pill-filter btn-medium" 
+              [class.active]="selectedPriority() === 'medium'" 
+              (click)="setPriorityFilter('medium')">
+              Moyenne
+            </button>
+            <button 
+              class="pill-filter btn-low" 
+              [class.active]="selectedPriority() === 'low'" 
+              (click)="setPriorityFilter('low')">
+              Basse
+            </button>
+          </div>
+
+          <!-- ASSIGNEE FILTER DROPDOWN -->
+          <div class="assignee-filter-wrapper">
+            <select 
+              id="filterAssignee" 
+              [ngModel]="selectedAssignee()" 
+              (ngModelChange)="selectedAssignee.set($event)" 
+              class="select-filter">
+              <option [ngValue]="null">Tous les membres</option>
+              @for (m of projectMembers(); track m.id) {
+                <option [ngValue]="m.userId">{{ m.userName }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- RESET FILTERS -->
+          @if (selectedPriority() !== 'all' || selectedAssignee() !== null) {
+            <button class="btn-clear-filters" (click)="clearFilters()">
+              Réinitialiser
+            </button>
+          }
+
+          <!-- CREATE TASK BUTTON -->
+          @if (canEdit) {
+            <button (click)="openCreateModal()" class="btn-create-task">
+              + Nouvelle tâche
+            </button>
+          }
+        </div>
+      }
     </div>
 
-    @if (isLoading()) {
-      <section class="loading-state">
-        <span class="spinner-large"></span>
-        <p>Chargement des tâches...</p>
-      </section>
-    } @else if (error()) {
-      <section class="error-banner">
-        <p>{{ error() }}</p>
-        <button (click)="fetchTasks(projectId()!)" class="btn-retry">Réessayer</button>
-      </section>
-    } @else {
-      <section class="kanban-board">
-        <!-- TODO COLUMN -->
-        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'todo')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
-          <div class="column-header">
-            <h3>À faire</h3>
-            <span class="badge badge-todo">{{ todoTasks().length }}</span>
-          </div>
-          <div class="tasks-list">
-            @for (task of todoTasks();track task.id) {
-              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                    <h4>{{ task.title }}</h4>
-                    <div class="task-meta">
-                      <small class="assignee">Assigné à: {{ getAssigneeName(task.assigneeId) }}</small>
+    <!-- CONDITIONAL TAB RENDERING -->
+
+    <!-- TAB 1: KANBAN BOARD -->
+    @if (activeTab() === 'board') {
+      @if (isLoading()) {
+        <section class="loading-state">
+          <span class="spinner-large"></span>
+          <p>Chargement des tâches...</p>
+        </section>
+      } @else if (error()) {
+        <section class="error-banner">
+          <p>{{ error() }}</p>
+          <button (click)="fetchTasks(projectId()!)" class="btn-retry">Réessayer</button>
+        </section>
+      } @else {
+        <section class="kanban-board">
+          <!-- TODO COLUMN -->
+          <div class="kanban-column" 
+            (dragover)="onDragOver($event)" 
+            (drop)="onDrop($event,'todo')" 
+            (dragenter)="onDragEnter($event)" 
+            (dragleave)="onDragLeave($event)">
+            <div class="column-header">
+              <span class="dot dot-todo"></span>
+              <h3>À faire</h3>
+              <span class="badge badge-todo">{{ todoTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of todoTasks(); track task.id) {
+                <div class="task-card" 
+                  [ngClass]="getTaskClass(task)" 
+                  [class.dragging]="draggingTaskId() === task.id" 
+                  (click)="openEditModal(task)" 
+                  tabindex="0" 
+                  role="button" 
+                  [attr.draggable]="canDragTaskLocal(task)" 
+                  (dragstart)="onDragStart($event, task)" 
+                  (dragend)="onDragEnd($event)">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="card-footer-info">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    <div class="card-assignee-circle" title="Assigné à: {{ getAssigneeName(task.assigneeId) }}">
+                      {{ getAssigneeInitials(task.assigneeId) }}
                     </div>
-                    @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
-                }
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche à faire</div>
+              }
+            </div>
+          </div>
+
+          <!-- IN PROGRESS COLUMN -->
+          <div class="kanban-column" 
+            (dragover)="onDragOver($event)" 
+            (drop)="onDrop($event,'in-progress')" 
+            (dragenter)="onDragEnter($event)" 
+            (dragleave)="onDragLeave($event)">
+            <div class="column-header">
+              <span class="dot dot-progress"></span>
+              <h3>En cours</h3>
+              <span class="badge badge-progress">{{ inProgressTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of inProgressTasks(); track task.id) {
+                <div class="task-card" 
+                  [ngClass]="getTaskClass(task)" 
+                  [class.dragging]="draggingTaskId() === task.id" 
+                  (click)="openEditModal(task)" 
+                  tabindex="0" 
+                  role="button" 
+                  [attr.draggable]="canDragTaskLocal(task)" 
+                  (dragstart)="onDragStart($event, task)" 
+                  (dragend)="onDragEnd($event)">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="card-footer-info">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    <div class="card-assignee-circle" title="Assigné à: {{ getAssigneeName(task.assigneeId) }}">
+                      {{ getAssigneeInitials(task.assigneeId) }}
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche en cours</div>
+              }
+            </div>
+          </div>
+
+          <!-- DONE COLUMN -->
+          <div class="kanban-column" 
+            (dragover)="onDragOver($event)" 
+            (drop)="onDrop($event,'done')" 
+            (dragenter)="onDragEnter($event)" 
+            (dragleave)="onDragLeave($event)">
+            <div class="column-header">
+              <span class="dot dot-done"></span>
+              <h3>Terminé</h3>
+              <span class="badge badge-done">{{ doneTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of doneTasks(); track task.id) {
+                <div class="task-card" 
+                  [ngClass]="getTaskClass(task)" 
+                  [class.dragging]="draggingTaskId() === task.id" 
+                  (click)="openEditModal(task)" 
+                  tabindex="0" 
+                  role="button" 
+                  [attr.draggable]="canDragTaskLocal(task)" 
+                  (dragstart)="onDragStart($event, task)" 
+                  (dragend)="onDragEnd($event)">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="card-footer-info">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    <div class="card-assignee-circle" title="Assigné à: {{ getAssigneeName(task.assigneeId) }}">
+                      {{ getAssigneeInitials(task.assigneeId) }}
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche terminée</div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+    }
+
+    <!-- TAB 2: STATISTICS -->
+    @if (activeTab() === 'stats') {
+      <section class="stats-panel fade-in">
+        <!-- GLOBAL KPI GRID -->
+        <div class="stats-kpi-grid">
+          <!-- CARD 1: PROGRESS RATE -->
+          <div class="kpi-card glass-panel">
+            <h3>Avancement Global</h3>
+            <div class="progress-ring-wrapper">
+              <div class="progress-value">{{ progressRate() }}%</div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" [style.width.%]="progressRate()"></div>
               </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche à faire</div>
-            }
+            </div>
+            <p class="kpi-detail">{{ completedTasksCount() }} / {{ totalTasksCount() }} tâches terminées</p>
+          </div>
+
+          <!-- CARD 2: BY STATUS -->
+          <div class="kpi-card glass-panel">
+            <h3>Répartition par Statut</h3>
+            <ul class="stats-breakdown-list">
+              <li>
+                <span class="status-dot dot-todo"></span>
+                <span class="status-label">À faire</span>
+                <span class="status-count">{{ todoTasksCount() }}</span>
+              </li>
+              <li>
+                <span class="status-dot dot-progress"></span>
+                <span class="status-label">En cours</span>
+                <span class="status-count">{{ inProgressTasksCount() }}</span>
+              </li>
+              <li>
+                <span class="status-dot dot-done"></span>
+                <span class="status-label">Terminé</span>
+                <span class="status-count">{{ completedTasksCount() }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- CARD 3: BY PRIORITY -->
+          <div class="kpi-card glass-panel">
+            <h3>Tâches par Priorité</h3>
+            <ul class="stats-breakdown-list">
+              <li>
+                <span class="priority-border tag-high"></span>
+                <span class="status-label">Haute</span>
+                <span class="status-count">{{ tasks().filter(t => t.priority === 'high').length }}</span>
+              </li>
+              <li>
+                <span class="priority-border tag-medium"></span>
+                <span class="status-label">Moyenne</span>
+                <span class="status-count">{{ tasks().filter(t => t.priority === 'medium').length }}</span>
+              </li>
+              <li>
+                <span class="priority-border tag-low"></span>
+                <span class="status-label">Basse</span>
+                <span class="status-count">{{ tasks().filter(t => t.priority === 'low').length }}</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <!-- IN PROGRESS COLUMN -->
-        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'in-progress')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
-          <div class="column-header">
-            <h3>En cours</h3>
-            <span class="badge badge-progress">{{ inProgressTasks().length }}</span>
+        <!-- DETAILED ANALYTICS GRID -->
+        <div class="stats-details-grid">
+          <!-- COLUMN 1: LATE TASKS -->
+          <div class="details-section glass-panel">
+            <h3>Tâches en retard ({{ lateTasks().length }})</h3>
+            <div class="stats-list-scroll">
+              @for (task of lateTasks(); track task.id) {
+                <div class="late-task-item">
+                  <div class="late-badge">Retard</div>
+                  <div class="late-info">
+                    <h4>{{ task.title }}</h4>
+                    <span class="late-date">Date d'échéance : {{ task.dueDate }}</span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="empty-list-text">Aucune tâche en retard 🎉</p>
+              }
+            </div>
           </div>
-          <div class="tasks-list">
-            @for (task of inProgressTasks();track task.id) {
-              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
-                }
+
+          <!-- COLUMN 2: WORKLOAD -->
+          <div class="details-section glass-panel">
+            <h3>Charge de Travail & Équipe</h3>
+            <div class="stats-workload-content">
+              <div class="workload-stat-box">
+                <span class="stat-number-large">{{ mostBusyMember() }}</span>
+                <span class="stat-description">Membre le plus actif (le plus de tâches en cours)</span>
               </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche en cours</div>
-            }
+            </div>
           </div>
         </div>
-
-        <!-- DONE COLUMN -->
-        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'done')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
-          <div class="column-header">
-            <h3>Terminé</h3>
-            <span class="badge badge-done">{{ doneTasks().length }}</span>
-          </div>
-          <div class="tasks-list">
-            @for (task of doneTasks();track task.id) {
-              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
-                }
-              </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche terminée</div>
-            }
-          </div>
-        </div>
-
       </section>
     }
 
-    <!-- Create Task Modal -->
-    <div *ngIf="showCreateModal()" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal">
-        <button class="modal-close" aria-label="Fermer" (click)="closeCreateModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-        <h3>{{ editingTaskId() ? 'Modifier la tâche' : 'Créer une nouvelle tâche' }}</h3>
-        <form [formGroup]="taskForm" (ngSubmit)="onCreateTask()" class="create-form">
-          <div class="form-row">
-            <label for="title">Titre</label>
-            <input id="title" formControlName="title" />
+    <!-- TAB 3: TEAM MEMBERS -->
+    @if (activeTab() === 'team') {
+      <section class="team-panel glass-panel fade-in">
+        @if (memberErrorMessage()) {
+          <div class="alert alert-error mb-4">
+            <span>{{ memberErrorMessage() }}</span>
           </div>
-          <div class="form-row">
-            <label for="description">Description</label>
-            <textarea id="description" formControlName="description"></textarea>
-          </div>
-          <div class="form-row">
-            <label for="assignee">Assigner à</label>
-            <select id="assignee" formControlName="assignee">
-              <option [ngValue]="null">Aucun</option>
-              <option *ngFor="let m of projectMembers()" [ngValue]="m.userId">{{ m.userName }} ({{ m.role }})</option>
-            </select>
-          </div>
-          <div class="form-row split">
-            <div>
-              <label for="priority">Priorité</label>
-              <select id="priority" formControlName="priority">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+        }
+
+        <!-- INVITE SECTION (Only Owner/Admin) -->
+        @if (isOwner() || userRole() === 'Admin') {
+          <div class="team-invite-box">
+            <h3>Ajouter un membre à l'équipe</h3>
+            <p>Invitez un collaborateur par e-mail et définissez son rôle sur le projet.</p>
+            
+            <div class="invite-grid">
+              <div class="input-invite-wrapper">
+                <input 
+                  type="email" 
+                  [ngModel]="inviteEmail()" 
+                  (ngModelChange)="inviteEmail.set($event)" 
+                  placeholder="adresse@collaborateur.com" 
+                  class="input-invite-field" />
+              </div>
+              <div class="select-role-wrapper">
+                <select 
+                  [ngModel]="inviteRole()" 
+                  (ngModelChange)="inviteRole.set($event)" 
+                  class="select-role-field">
+                  <option value="Admin">Administrateur</option>
+                  <option value="Collaborator">Collaborateur</option>
+                  <option value="Viewer">Spectateur</option>
+                </select>
+              </div>
+              <button 
+                (click)="onAddMember()" 
+                class="btn-invite-submit" 
+                [disabled]="!inviteEmail() || isMembersLoading()">
+                Inviter
+              </button>
             </div>
-            <div>
-              <label for="dueDate">Date d'échéance</label>
-              <input id="dueDate" type="date" formControlName="dueDate" [attr.min]="minDate" />
+          </div>
+        }
+
+        <!-- TEAM MEMBERS LIST -->
+        <div class="team-list-section">
+          <h3>Membres de l'équipe ({{ projectMembers().length }})</h3>
+          
+          @if (isMembersLoading()) {
+            <div class="members-loading">
+              <span class="spinner"></span>
+              <p>Chargement des membres...</p>
             </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
-            <button *ngIf="editingTaskId() && (userRole() === 'Owner' || userRole() === 'Admin')" type="button" class="btn-delete" (click)="deleteTask(editingTaskId()!)">Supprimer</button>
-            <button type="submit" class="btn-submit" [disabled]="isSaving() || !canSubmitEditing()">
-              {{ isSaving() ? 'Enregistrement...' : (editingTaskId() ? 'Mettre à jour' : 'Créer') }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          } @else {
+            <div class="members-table-wrapper">
+              <table class="members-table">
+                <thead>
+                  <tr>
+                    <th>Membre</th>
+                    <th>Adresse E-mail</th>
+                    <th>Rôle</th>
+                    @if (isOwner() || userRole() === 'Admin') {
+                      <th class="col-actions">Actions</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (member of projectMembers(); track member.id) {
+                    <tr>
+                      <td>
+                        <div class="member-name-avatar">
+                          <div class="avatar-sm">
+                            {{ (member.userName ? member.userName[0] : 'U') | uppercase }}
+                          </div>
+                          <span class="table-user-name">{{ member.userName }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="table-user-email">{{ member.userEmail }}</span>
+                      </td>
+                      <td>
+                        <!-- Dropdown to edit role for Owners/Admins -->
+                        @if ((isOwner() || userRole() === 'Admin') && member.role !== 'Owner') {
+                          <select 
+                            [ngModel]="member.role" 
+                            (ngModelChange)="onChangeRole(member, $event)" 
+                            class="select-role-table">
+                            <option value="Admin">Administrateur</option>
+                            <option value="Collaborator">Collaborateur</option>
+                            <option value="Viewer">Spectateur</option>
+                          </select>
+                        } @else {
+                          <span class="role-badge-static" [class.badge-static-owner]="member.role === 'Owner'">
+                            {{ member.role }}
+                          </span>
+                        }
+                      </td>
+                      @if (isOwner() || userRole() === 'Admin') {
+                        <td class="col-actions">
+                          @if (member.role !== 'Owner') {
+                            <button class="btn-remove-team" (click)="onRemoveMember(member)" title="Retirer du projet">
+                              Retirer
+                            </button>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </section>
+    }
 
   </main>
+
+  <!-- Create/Edit Task Modal -->
+  <div *ngIf="showCreateModal()" class="modal-overlay" role="dialog" aria-modal="true" (click)="closeCreateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" aria-label="Fermer" (click)="closeCreateModal()">
+        &times;
+      </button>
+      <h3>{{ editingTaskId() ? 'Modifier la tâche' : 'Créer une nouvelle tâche' }}</h3>
+      <form [formGroup]="taskForm" (ngSubmit)="onCreateTask()" class="create-form">
+        <div class="form-row">
+          <label for="title">Titre</label>
+          <input id="title" formControlName="title" placeholder="Titre de la tâche" />
+          @if (taskForm.get('title')?.touched && taskForm.get('title')?.invalid) {
+            <span class="error-text">Le titre doit faire au moins 3 caractères.</span>
+          }
+        </div>
+        <div class="form-row">
+          <label for="description">Description</label>
+          <textarea id="description" formControlName="description" placeholder="Description de la tâche..."></textarea>
+        </div>
+        <div class="form-row">
+          <label for="assignee">Assigner à</label>
+          <select id="assignee" formControlName="assignee">
+            <option [ngValue]="null">Aucun</option>
+            <option *ngFor="let m of projectMembers()" [ngValue]="m.userId">{{ m.userName }}</option>
+          </select>
+        </div>
+        <div class="form-row split">
+          <div>
+            <label for="priority">Priorité</label>
+            <select id="priority" formControlName="priority">
+              <option value="low">Basse</option>
+              <option value="medium">Moyenne</option>
+              <option value="high">Haute</option>
+            </select>
+          </div>
+          <div>
+            <label for="dueDate">Date d'échéance</label>
+            <input id="dueDate" type="date" formControlName="dueDate" [attr.min]="minDate" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
+          @if (editingTaskId() && (userRole() === 'Owner' || userRole() === 'Admin')) {
+            <button type="button" class="btn-delete" (click)="deleteTask(editingTaskId()!)">Supprimer</button>
+          }
+          <button type="submit" class="btn-submit" [disabled]="isSaving() || !canSubmitEditing() || taskForm.invalid">
+            {{ isSaving() ? 'Enregistrement...' : (editingTaskId() ? 'Mettre à jour' : 'Créer') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
-
-
-
-
-
