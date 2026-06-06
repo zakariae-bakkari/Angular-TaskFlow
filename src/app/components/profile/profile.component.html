@@ -1,0 +1,50 @@
+<div class="profile-page">
+  <header class="profile-header">
+    <h2>Mon profil</h2>
+    <div class="meta">
+      <div>Total projets: <strong>{{ totalProjects() }}</strong></div>
+      <div>Mes tâches: <strong>{{ myTasks().length }}</strong></div>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat-card">
+      <h3>Tâches par statut</h3>
+      <ul>
+        <li>À faire: {{ tasksByStatus().todo }}</li>
+        <li>En cours: {{ tasksByStatus()['in-progress'] }}</li>
+        <li>Terminées: {{ tasksByStatus().done }}</li>
+      </ul>
+    </div>
+    <div class="stat-card">
+      <h3>Tâches par priorité</h3>
+      <ul>
+        <li>Haute: {{ tasksByPriority().high }}</li>
+        <li>Moyenne: {{ tasksByPriority().medium }}</li>
+        <li>Basse: {{ tasksByPriority().low }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="notifications">
+    <div class="notif-header">
+      <h3>Notifications</h3>
+      <button (click)="markAllRead()">Marquer tout lu</button>
+    </div>
+    <ul>
+      <li *ngFor="let n of notifications()">
+        <div class="notif-item">
+          <div class="notif-main">
+            <strong>{{ n.title }}</strong>
+            <div class="notif-time">{{ n.createdAt | date:'short' }}</div>
+            <div class="notif-message">{{ n.message }}</div>
+          </div>
+          <div class="notif-actions">
+            <button (click)="markRead(n.id)">Marquer lu</button>
+          </div>
+        </div>
+      </li>
+      <li *ngIf="notifications().length === 0">Aucune notification.</li>
+    </ul>
+  </section>
+</div>

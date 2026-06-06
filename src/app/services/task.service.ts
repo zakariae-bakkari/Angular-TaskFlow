@@ -16,6 +16,11 @@ export class TaskService {
     return this.http.get<Task[]>(`${this.tasksUrl}?projectId=${projectId}`);
   }
 
+  // Get tasks assigned to a user across projects
+  getTasksAssignedToUser(userId: number): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.tasksUrl}?assigneeId=${userId}`);
+  }
+
   // Get task by ID
   getTaskById(id: number): Observable<Task> {
     return this.http.get<Task>(`${this.tasksUrl}/${id}`);

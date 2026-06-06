@@ -1,10 +1,11 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { Project, ProjectMember } from '../../project.model';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-projects',
@@ -18,6 +19,7 @@ export class ProjectsComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
 
   // Lists
   protected readonly projects = signal<Project[]>([]);
@@ -36,6 +38,9 @@ export class ProjectsComponent implements OnInit {
   protected readonly showCreateModal = signal<boolean>(false);
   protected readonly showEditModal = signal<boolean>(false);
   protected readonly showMembersModal = signal<boolean>(false);
+  protected readonly showNotifications = signal<boolean>(false);
+  protected readonly notificationsList = signal<any[]>([]);
+  protected readonly unreadCount = computed(() => this.notificationsList().filter(n => !n.read).length);
 
   // Forms
   protected readonly projectForm: FormGroup = this.fb.group({
@@ -60,6 +65,12 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProjects();
+    // preload notifications so unread count is available immediately
+    const user = this.authService.currentUser();
+    if (user) {
+      const notes = this.notificationService.getNotificationsForUser(user.id) || [];
+      this.notificationsList.set(notes);
+    }
   }
 
   loadProjects(): void {
@@ -188,6 +199,55 @@ export class ProjectsComponent implements OnInit {
     this.memberErrorMessage.set(null);
     this.loadMembers(project.id);
     this.showMembersModal.set(true);
+  }
+
+  toggleNotifications(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    const next = !this.showNotifications();
+    this.showNotifications.set(next);
+    if (next) {
+      // only fetch if we don't already have notifications (avoid replacing enriched messages)
+      if (this.notificationsList().length === 0) {
+        const notes = this.notificationService.getNotificationsForUser(user.id) || [];
+        this.notificationsList.set(notes);
+        // Enrich notifications: if message contains projet "<id>", replace with project name
+        const idRegex = /projet\s+"(\d+)"/i;
+        notes.forEach(n => {
+          const m = (n.message || '').match(idRegex);
+          if (m && m[1]) {
+            const pid = Number(m[1]);
+            this.projectService.getProjectById(pid).subscribe({
+              next: proj => {
+                if (proj && proj.name) {
+                  const updated = this.notificationsList().map(item => item.id === n.id ? { ...item, message: (n.message || '').replace(idRegex, `projet \"${proj.name}\"`) } : item);
+                  this.notificationsList.set(updated);
+                }
+              },
+              error: () => { /* ignore */ }
+            });
+          }
+        });
+      }
+    }
+  }
+
+  markNotificationRead(id: string): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    // update local view first (preserve any enriched message)
+    this.notificationsList.set(this.notificationsList().map(n => n.id === id ? { ...n, read: true } : n));
+    // persist
+    this.notificationService.markAsRead(user.id, id);
+  }
+
+  markAllRead(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+    // update local view first
+    this.notificationsList.set(this.notificationsList().map(n => ({ ...n, read: true })));
+    // persist
+    this.notificationService.markAllRead(user.id);
   }
 
   closeMembersModal(): void {
