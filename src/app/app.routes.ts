@@ -4,6 +4,10 @@ import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    loadComponent: () => import('./components/landing/landing.component').then(m => m.LandingComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
     canActivate: [guestGuard]
@@ -24,12 +28,7 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: '',
-    redirectTo: 'projects',
-    pathMatch: 'full'
-  },
-  {
     path: '**',
-    redirectTo: 'projects'
+    redirectTo: ''
   }
 ];

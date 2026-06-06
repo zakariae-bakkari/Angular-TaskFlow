@@ -6,8 +6,8 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #12101d;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  background-color: #f8fbff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
 }
