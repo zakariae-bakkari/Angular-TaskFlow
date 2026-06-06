@@ -2,8 +2,7 @@
   <header class="dashboard-header">
     <div class="header-brand">
       <a routerLink="/projects" class="btn-back" title="Retour aux projets">
-        <span class="back-icon" aria-hidden="true">←</span>
-        <span class="back-label">Retour</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="back-icon"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </a>
       <div class="logo-circle-small"></div>
       <h1>TaskFlow : {{ project()?.name }}</h1>
@@ -59,7 +58,7 @@
       <h2>Tableau Kanban : {{ project()?.name }}</h2>
       <p>{{ project()?.description || 'Gestion des tâches du projet.' }}</p>
       <button *ngIf="userRole() === 'Owner' || userRole() === 'Admin'" (click)="openCreateModal()" class="btn-create" aria-haspopup="dialog" aria-expanded="false">
-        <span class="btn-icon">+</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span class="btn-label">Créer une tâche</span>
       </button>
     </div>
@@ -157,7 +156,9 @@
     <!-- Create Task Modal -->
     <div *ngIf="showCreateModal()" class="modal-overlay" role="dialog" aria-modal="true">
       <div class="modal">
-        <button class="modal-close" aria-label="Fermer" (click)="closeCreateModal()">×</button>
+        <button class="modal-close" aria-label="Fermer" (click)="closeCreateModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
         <h3>{{ editingTaskId() ? 'Modifier la tâche' : 'Créer une nouvelle tâche' }}</h3>
         <form [formGroup]="taskForm" (ngSubmit)="onCreateTask()" class="create-form">
           <div class="form-row">

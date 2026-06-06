@@ -100,6 +100,7 @@
   color: #0071e3;
   font-size: 0.92rem;
   font-weight: 850;
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.08);
 }
 
 .user-details {

@@ -80,16 +80,19 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   margin-right: 0.25rem;
+  box-shadow: 0 4px 12px rgba(31, 48, 76, 0.05);
 }
 
 .btn-back:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: #ffffff;
+  transform: translateX(-2px);
+  box-shadow: 0 8px 20px rgba(31, 48, 76, 0.1);
+  color: #0071e3;
 }
 
 .back-icon {
-  width: 18px;
-  height: 18px;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .role-badge {
@@ -152,12 +155,16 @@
 .avatar {
   width: 36px;
   height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgba(0, 113, 227, 0.16);
   border-radius: 50%;
   background: #eaf4ff;
   color: #0071e3;
   font-size: 0.92rem;
   font-weight: 850;
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.08);
 }
 
 .user-details {
@@ -245,20 +252,34 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  margin-top: 0.75rem;
-  padding: 0.6rem 0.9rem;
-  background: linear-gradient(90deg,#7702FF,#FF41F8);
+  margin-top: 1rem;
+  padding: 0.75rem 1.35rem;
+  background: #0071e3;
   color: #fff;
   border: none;
-  border-radius: 12px;
-  font-weight: 700;
+  border-radius: 999px;
+  font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(119,2,255,0.18);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 12px 24px rgba(0, 113, 227, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.btn-create:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(119,2,255,0.22); }
-.btn-icon { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:1.1rem; background:rgba(255,255,255,0.12); border-radius:6px; }
-.btn-label{ font-size:0.95rem; }
+
+.btn-create:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(0, 113, 227, 0.28);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.btn-label {
+  font-size: 0.95rem;
+}
 
 /* Modal styles */
 .modal-overlay {
@@ -267,63 +288,201 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.6));
+  background: rgba(246, 248, 251, 0.56);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   z-index: 1200;
   padding: 1.25rem;
 }
+
 .modal {
   width: 100%;
-  max-width: 640px;
-  background: #0f0c16;
-  border-radius: 14px;
-  padding: 1.25rem 1.25rem 1.5rem 1.25rem;
-  box-shadow: 0 20px 50px rgba(2,6,23,0.6);
-  border: 1px solid rgba(255,255,255,0.04);
+  max-width: 580px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 2.25rem;
+  box-shadow: 0 30px 70px rgba(31, 48, 76, 0.14);
+  border: 1px solid rgba(29, 29, 31, 0.08);
   position: relative;
+  animation: modalEnter 0.28s ease both;
 }
-.modal h3{ margin:0 0 0.75rem 0; font-size:1.15rem; }
-.modal-close{ position:absolute; top:10px; right:10px; background:transparent; border:none; color:#9aa3b2; font-size:1.35rem; cursor:pointer; }
-.create-form .form-row{ display:flex; flex-direction:column; gap:0.35rem; margin-bottom:0.85rem; }
-.create-form .form-row.split{ display:flex; gap:0.75rem; }
-.create-form label{ color:#cbd5e1; font-weight:600; font-size:0.85rem; }
-.create-form input, .create-form textarea, .create-form select{ background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); color:#fff; padding:0.55rem 0.65rem; border-radius:8px; font-size:0.95rem; }
-.create-form textarea{ min-height:92px; resize:vertical; }
-.form-actions{ display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.5rem; }
-.btn-cancel{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:#cbd5e1; padding:0.5rem 0.85rem; border-radius:8px; cursor:pointer; }
-.btn-submit{ background:linear-gradient(90deg,#FF41F8,#7702FF); color:#fff; border:none; padding:0.55rem 0.9rem; border-radius:8px; font-weight:700; cursor:pointer; }
-.btn-submit[disabled]{ opacity:0.6; cursor:not-allowed; }
 
-.btn-delete{ background:transparent; border:1px solid rgba(229,62,62,0.16); color:#feb2b2; padding:0.5rem 0.85rem; border-radius:8px; cursor:pointer; }
-.btn-delete:hover{ background:rgba(229,62,62,0.06); }
+.modal h3 {
+  margin: 0 0 1.5rem 0;
+  color: #1d1d1f;
+  font-size: 1.45rem;
+  font-weight: 850;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  color: #68707d;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #ffffff;
+  color: #1d1d1f;
+  transform: rotate(90deg);
+}
+
+.create-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.create-form .form-row.split {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.create-form .form-row.split > div {
+  flex: 1;
+}
+
+.create-form label {
+  color: #3f4652;
+  font-weight: 750;
+  font-size: 0.88rem;
+}
+
+.create-form input,
+.create-form textarea,
+.create-form select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(29, 29, 31, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  color: #1d1d1f;
+  font-size: 0.94rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.create-form input:focus,
+.create-form textarea:focus,
+.create-form select:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+}
+
+.create-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.btn-cancel {
+  min-height: 42px;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(29, 29, 31, 0.1);
+  color: #3f4652;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #ffffff;
+  border-color: rgba(29, 29, 31, 0.15);
+}
+
+.btn-submit {
+  min-height: 42px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background: #0071e3;
+  color: #fff;
+  border: none;
+  font-weight: 850;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(0, 113, 227, 0.18);
+  transition: all 0.2s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(0, 113, 227, 0.24);
+}
+
+.btn-submit[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-delete {
+  min-height: 42px;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.18);
+  color: #b42318;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 59, 48, 0.12);
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 
 /* Improved select appearance inside modal */
 .create-form select {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  color: #ffffff;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
-}
-
-/* Try to style native options (may be browser-dependent) */
-.create-form select option {
-  background: #0f0c16;
-  color: #ffffff;
-  padding: 6px 8px;
-}
-
-/* Add a subtle custom arrow on the select */
-.create-form select {
-  background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(50% - 6px), calc(100% - 13px) calc(50% - 6px);
-  background-size: 6px 6px, 6px 6px;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230071e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  padding-right: 2.2rem;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+  padding-right: 2.8rem;
+}
+
+.create-form select option {
+  background: #ffffff;
+  color: #1d1d1f;
 }
 
 .loading-state,

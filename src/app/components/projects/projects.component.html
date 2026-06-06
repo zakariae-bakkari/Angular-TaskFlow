@@ -155,7 +155,13 @@
             <label for="new-name">Nom du projet</label>
             <input id="new-name" type="text" formControlName="name" placeholder="Ex: Portail Client" />
             @if (projectForm.get('name')?.touched && projectForm.get('name')?.invalid) {
-              <span class="error-text">Le nom doit faire au moins 3 caractères.</span>
+              <span class="error-text">
+                @if (projectForm.get('name')?.hasError('required') || projectForm.get('name')?.hasError('minlength')) {
+                  Le nom doit faire au moins 3 caractères.
+                } @else if (projectForm.get('name')?.hasError('duplicateName')) {
+                  Ce nom de projet existe déjà.
+                }
+              </span>
             }
           </div>
           <div class="form-group">
@@ -184,7 +190,13 @@
             <label for="edit-name">Nom du projet</label>
             <input id="edit-name" type="text" formControlName="name" />
             @if (editProjectForm.get('name')?.touched && editProjectForm.get('name')?.invalid) {
-              <span class="error-text">Le nom doit faire au moins 3 caractères.</span>
+              <span class="error-text">
+                @if (editProjectForm.get('name')?.hasError('required') || editProjectForm.get('name')?.hasError('minlength')) {
+                  Le nom doit faire au moins 3 caractères.
+                } @else if (editProjectForm.get('name')?.hasError('duplicateName')) {
+                  Ce nom de projet existe déjà.
+                }
+              </span>
             }
           </div>
           <div class="form-group">

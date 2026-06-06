@@ -108,11 +108,19 @@ export class ProjectsComponent implements OnInit {
       return;
     }
 
+    const { name, description } = this.projectForm.value;
+    
+    // Check if name already exists (case-insensitive)
+    const exists = this.projects().some(p => p.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      this.projectForm.get('name')?.setErrors({ duplicateName: true });
+      return;
+    }
+
     const user = this.authService.currentUser();
     if (!user) return;
 
     this.isLoading.set(true);
-    const { name, description } = this.projectForm.value;
 
     this.projectService.createProject(name, description, user.id).subscribe({
       next: () => {
@@ -149,8 +157,18 @@ export class ProjectsComponent implements OnInit {
       return;
     }
 
-    this.isLoading.set(true);
     const { name, description } = this.editProjectForm.value;
+
+    // Check if name already exists in OTHER projects
+    const exists = this.projects().some(p => 
+      p.id !== active.id && p.name.toLowerCase() === name.toLowerCase()
+    );
+    if (exists) {
+      this.editProjectForm.get('name')?.setErrors({ duplicateName: true });
+      return;
+    }
+
+    this.isLoading.set(true);
 
     this.projectService.updateProject(active.id, name, description).subscribe({
       next: () => {

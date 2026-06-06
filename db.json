@@ -43,18 +43,6 @@
       "description": "test",
       "ownerId": 1,
       "id": 5
-    },
-    {
-      "name": "Angular-TaskFlow",
-      "description": null,
-      "ownerId": 1,
-      "id": 6
-    },
-    {
-      "name": "SKilo",
-      "description": null,
-      "ownerId": 2,
-      "id": 7
     }
   ],
   "projectMembers": [
@@ -85,7 +73,7 @@
     {
       "projectId": 2,
       "userId": 1,
-      "role": "Admin",
+      "role": "Viewer",
       "id": 5
     },
     {
@@ -93,42 +81,6 @@
       "userId": 1,
       "role": "Owner",
       "id": 8
-    },
-    {
-      "projectId": 6,
-      "userId": 1,
-      "role": "Owner",
-      "id": 9
-    },
-    {
-      "projectId": 6,
-      "userId": 2,
-      "role": "Collaborator",
-      "id": 10
-    },
-    {
-      "projectId": 5,
-      "userId": 2,
-      "role": "Collaborator",
-      "id": 11
-    },
-    {
-      "projectId": 5,
-      "userId": 3,
-      "role": "Viewer",
-      "id": 12
-    },
-    {
-      "projectId": 7,
-      "userId": 2,
-      "role": "Owner",
-      "id": 13
-    },
-    {
-      "projectId": 7,
-      "userId": 1,
-      "role": "Collaborator",
-      "id": 14
     }
   ],
   "tasks": [
@@ -168,59 +120,11 @@
       "description": "",
       "priority": "medium",
       "dueDate": "2026-06-14",
-      "assigneeId": 4,
+      "assigneeId": 1,
       "status": "todo",
       "createdAt": "2026-06-06T13:43:32.419Z",
-      "updatedAt": "2026-06-06T13:43:36.296Z",
+      "updatedAt": "2026-06-06T14:34:49.012Z",
       "id": 4
-    },
-    {
-      "projectId": 5,
-      "title": "test",
-      "description": "",
-      "priority": "medium",
-      "dueDate": "2026-06-14",
-      "assigneeId": 1,
-      "status": "todo",
-      "createdAt": "2026-06-06T15:37:22.878Z",
-      "updatedAt": "2026-06-06T15:37:22.878Z",
-      "id": 5
-    },
-    {
-      "projectId": 5,
-      "title": "test2",
-      "description": "",
-      "priority": "medium",
-      "dueDate": "2026-06-14",
-      "assigneeId": 2,
-      "status": "in-progress",
-      "createdAt": "2026-06-06T15:37:33.854Z",
-      "updatedAt": "2026-06-06T15:37:36.397Z",
-      "id": 6
-    },
-    {
-      "projectId": 5,
-      "title": "test3",
-      "description": "",
-      "priority": "high",
-      "dueDate": "2026-06-21",
-      "assigneeId": 3,
-      "status": "in-progress",
-      "createdAt": "2026-06-06T15:37:46.722Z",
-      "updatedAt": "2026-06-06T15:37:48.802Z",
-      "id": 7
-    },
-    {
-      "projectId": 7,
-      "title": "logiin",
-      "description": "",
-      "priority": "medium",
-      "dueDate": "2026-06-14",
-      "assigneeId": 1,
-      "status": "todo",
-      "createdAt": "2026-06-06T15:46:13.012Z",
-      "updatedAt": "2026-06-06T15:46:13.012Z",
-      "id": 8
     }
   ]
 }
