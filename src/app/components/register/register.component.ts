@@ -64,7 +64,7 @@ export class RegisterComponent {
     this.authService.register(name, email, password).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/kanban']);
+        this.router.navigate(['/projects']);
       },
       error: (err) => {
         this.isLoading.set(false);

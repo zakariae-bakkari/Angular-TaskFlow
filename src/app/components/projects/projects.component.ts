@@ -51,6 +51,12 @@ export class ProjectsComponent implements OnInit {
   // Member invitation fields
   protected inviteEmail = '';
   protected inviteRole: ProjectMember['role'] = 'Collaborator';
+  protected readonly confirmDialog = signal<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    action: () => void;
+  } | null>(null);
 
   ngOnInit(): void {
     this.loadProjects();
@@ -150,10 +156,17 @@ export class ProjectsComponent implements OnInit {
   // --- DELETE ---
   onDeleteProject(projectId: number, event: Event): void {
     event.stopPropagation(); // Avoid navigating
-    if (!confirm('Êtes-vous sûr de vouloir supprimer définitivement ce projet et ses membres ?')) {
-      return;
-    }
+    const project = this.projects().find(item => item.id === projectId);
 
+    this.confirmDialog.set({
+      title: 'Supprimer ce projet ?',
+      message: `Le projet "${project?.name || 'sélectionné'}" et ses membres seront supprimés définitivement.`,
+      confirmLabel: 'Supprimer',
+      action: () => this.deleteProject(projectId)
+    });
+  }
+
+  private deleteProject(projectId: number): void {
     this.isLoading.set(true);
     this.projectService.deleteProject(projectId).subscribe({
       next: () => {
@@ -233,15 +246,34 @@ export class ProjectsComponent implements OnInit {
       alert("Le propriétaire du projet ne peut pas être retiré du projet.");
       return;
     }
-    if (!confirm(`Retirer ${member.userName || member.userEmail} du projet ?`)) {
-      return;
-    }
+
+    this.confirmDialog.set({
+      title: 'Retirer ce membre ?',
+      message: `${member.userName || member.userEmail} perdra son accès à ce projet.`,
+      confirmLabel: 'Retirer',
+      action: () => this.removeMember(member)
+    });
+  }
+
+  private removeMember(member: ProjectMember): void {
     this.projectService.removeMember(member.id).subscribe({
       next: () => {
         const project = this.activeProject();
         if (project) this.loadMembers(project.id);
       }
     });
+  }
+
+  closeConfirmDialog(): void {
+    this.confirmDialog.set(null);
+  }
+
+  confirmDestructiveAction(): void {
+    const dialog = this.confirmDialog();
+    if (!dialog) return;
+
+    this.confirmDialog.set(null);
+    dialog.action();
   }
 
   // Helper: check if logged-in user is Owner of the project

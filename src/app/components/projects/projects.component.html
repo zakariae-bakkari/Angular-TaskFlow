@@ -196,11 +196,16 @@
                     <input type="email" [(ngModel)]="inviteEmail" placeholder="adresse@email.com" class="input-invite" />
                   </div>
                   <div class="form-group">
-                    <select [(ngModel)]="inviteRole" class="select-role">
-                      <option value="Admin">Administrateur</option>
-                      <option value="Collaborator">Collaborateur</option>
-                      <option value="Viewer">Spectateur</option>
-                    </select>
+                    <div class="custom-select">
+                      <select [(ngModel)]="inviteRole" class="select-role" aria-label="Rôle du collaborateur">
+                        <option value="Admin">Administrateur</option>
+                        <option value="Collaborator">Collaborateur</option>
+                        <option value="Viewer">Spectateur</option>
+                      </select>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M8.25 9.75L12 13.5l3.75-3.75" />
+                      </svg>
+                    </div>
                   </div>
                   <button (click)="onAddMember()" class="btn-primary flex-shrink" [disabled]="!inviteEmail">Inviter</button>
                 </div>
@@ -232,11 +237,16 @@
                       @if (activeProject(); as proj) {
                         <!-- Owners can modify roles, others just view -->
                         @if (isOwner(proj) && member.role !== 'Owner') {
-                          <select [ngModel]="member.role" (ngModelChange)="onChangeRole(member, $event)" class="select-role-small">
-                            <option value="Admin">Admin</option>
-                            <option value="Collaborator">Collab</option>
-                            <option value="Viewer">Viewer</option>
-                          </select>
+                          <div class="custom-select custom-select-small">
+                            <select [ngModel]="member.role" (ngModelChange)="onChangeRole(member, $event)" class="select-role-small" aria-label="Modifier le rôle">
+                              <option value="Admin">Admin</option>
+                              <option value="Collaborator">Collab</option>
+                              <option value="Viewer">Viewer</option>
+                            </select>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M8.25 9.75L12 13.5l3.75-3.75" />
+                            </svg>
+                          </div>
                           <button class="btn-remove-member" (click)="onRemoveMember(member)" title="Retirer du projet">
                             &times;
                           </button>
@@ -252,6 +262,26 @@
               </div>
             }
           </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (confirmDialog(); as dialog) {
+    <div class="modal-overlay confirm-overlay" (click)="closeConfirmDialog()">
+      <div class="modal-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title" (click)="$event.stopPropagation()">
+        <div class="confirm-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <div class="confirm-copy">
+          <h3 id="confirm-title">{{ dialog.title }}</h3>
+          <p>{{ dialog.message }}</p>
+        </div>
+        <div class="modal-actions confirm-actions">
+          <button type="button" class="btn-secondary" (click)="closeConfirmDialog()">Annuler</button>
+          <button type="button" class="btn-danger" (click)="confirmDestructiveAction()">{{ dialog.confirmLabel }}</button>
         </div>
       </div>
     </div>
