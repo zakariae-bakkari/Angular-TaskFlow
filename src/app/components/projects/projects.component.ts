@@ -197,6 +197,20 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
+  onToggleCompletion(project: Project, event: Event): void {
+    event.stopPropagation();
+    const newState = !project.completed;
+    
+    this.projectService.toggleProjectCompletion(project.id, newState).subscribe({
+      next: () => {
+        this.loadProjects();
+      },
+      error: () => {
+        this.errorMessage.set('Erreur lors de la mise à jour du statut du projet.');
+      }
+    });
+  }
+
   // --- MEMBERS ---
   openMembersModal(project: Project, event: Event): void {
     event.stopPropagation();

@@ -110,21 +110,21 @@
       "id": 2,
       "projectId": 1,
       "title": "Créer les composants",
-      "status": "todo",
+      "status": "done",
       "priority": "high",
       "assigneeId": 2,
       "dueDate": "2025-05-10",
-      "updatedAt": "2026-06-06T13:43:02.396Z"
+      "updatedAt": "2026-06-06T17:02:39.641Z"
     },
     {
       "id": 3,
       "projectId": 1,
       "title": "Rédiger les tests",
-      "status": "todo",
+      "status": "done",
       "priority": "medium",
       "assigneeId": 1,
       "dueDate": "2025-05-20",
-      "updatedAt": "2026-06-06T13:43:57.790Z"
+      "updatedAt": "2026-06-06T15:59:16.045Z"
     },
     {
       "projectId": 2,

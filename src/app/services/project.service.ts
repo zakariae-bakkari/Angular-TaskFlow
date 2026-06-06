@@ -41,7 +41,7 @@ export class ProjectService {
 
   // Create project and automatically add the creator as Owner
   createProject(name: string, description: string, ownerId: number): Observable<Project> {
-    const newProject = { name, description, ownerId };
+    const newProject = { name, description, ownerId, completed: false };
     return this.http.post<Project>(this.projectsUrl, newProject).pipe(
       switchMap(project => {
         const ownerMembership = {
@@ -54,6 +54,11 @@ export class ProjectService {
         );
       })
     );
+  }
+
+  // Toggle project completion
+  toggleProjectCompletion(projectId: number, completed: boolean): Observable<Project> {
+    return this.http.patch<Project>(`${this.projectsUrl}/${projectId}`, { completed });
   }
 
   // Update project

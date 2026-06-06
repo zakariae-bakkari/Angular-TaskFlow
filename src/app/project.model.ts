@@ -3,6 +3,7 @@ export interface Project {
   name: string;
   description?: string;
   ownerId: number;
+  completed: boolean;
 }
 
 export interface ProjectMember {
