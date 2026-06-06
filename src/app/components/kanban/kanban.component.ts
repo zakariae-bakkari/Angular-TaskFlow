@@ -45,10 +45,73 @@ export class KanbanComponent implements OnInit {
   protected readonly editingTaskId = signal<number | null>(null);
   protected readonly draggingTaskId = signal<number | null>(null);
 
-  // Computed columns
-  protected readonly todoTasks = computed(() => this.tasks().filter(t => t.status === 'todo'));
-  protected readonly inProgressTasks = computed(() => this.tasks().filter(t => t.status === 'in-progress'));
-  protected readonly doneTasks = computed(() => this.tasks().filter(t => t.status === 'done'));
+  // Active Tab
+  protected readonly activeTab = signal<'board' | 'stats' | 'team'>('board');
+
+  // Filter States
+  protected readonly selectedPriority = signal<'all' | 'low' | 'medium' | 'high'>('all');
+  protected readonly selectedAssignee = signal<number | null>(null);
+
+  // Team Invite Form States
+  protected readonly inviteEmail = signal<string>('');
+  protected readonly inviteRole = signal<ProjectMember['role']>('Collaborator');
+  protected readonly memberErrorMessage = signal<string | null>(null);
+  protected readonly isMembersLoading = signal<boolean>(false);
+
+  // Reactive Filters
+  protected readonly filteredTasks = computed(() => {
+    let list = this.tasks();
+    const priority = this.selectedPriority();
+    const assignee = this.selectedAssignee();
+
+    if (priority !== 'all') {
+      list = list.filter(t => t.priority === priority);
+    }
+    if (assignee !== null) {
+      list = list.filter(t => t.assigneeId === assignee);
+    }
+    return list;
+  });
+
+  // Computed columns based on filtered tasks
+  protected readonly todoTasks = computed(() => this.filteredTasks().filter(t => t.status === 'todo'));
+  protected readonly inProgressTasks = computed(() => this.filteredTasks().filter(t => t.status === 'in-progress'));
+  protected readonly doneTasks = computed(() => this.filteredTasks().filter(t => t.status === 'done'));
+
+  // Computed Statistics
+  protected readonly totalTasksCount = computed(() => this.tasks().length);
+  protected readonly completedTasksCount = computed(() => this.tasks().filter(t => t.status === 'done').length);
+  protected readonly inProgressTasksCount = computed(() => this.tasks().filter(t => t.status === 'in-progress').length);
+  protected readonly todoTasksCount = computed(() => this.tasks().filter(t => t.status === 'todo').length);
+  protected readonly progressRate = computed(() => {
+    const total = this.totalTasksCount();
+    return total > 0 ? Math.round((this.completedTasksCount() / total) * 100) : 0;
+  });
+  protected readonly lateTasks = computed(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.tasks().filter(t => t.status !== 'done' && t.dueDate && new Date(t.dueDate) < today);
+  });
+  protected readonly mostBusyMember = computed(() => {
+    const inProg = this.tasks().filter(t => t.status === 'in-progress');
+    const counts: { [id: number]: number } = {};
+    inProg.forEach(t => {
+      if (t.assigneeId) {
+        counts[t.assigneeId] = (counts[t.assigneeId] || 0) + 1;
+      }
+    });
+    let maxId = -1;
+    let maxCount = -1;
+    Object.keys(counts).forEach(k => {
+      const id = Number(k);
+      if (counts[id] > maxCount) {
+        maxCount = counts[id];
+        maxId = id;
+      }
+    });
+    if (maxId === -1) return 'Aucun';
+    return this.getAssigneeName(maxId);
+  });
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('projectId');
@@ -73,14 +136,16 @@ export class KanbanComponent implements OnInit {
   }
 
   fetchProjectMembers(pId: number): void {
+    this.isMembersLoading.set(true);
     this.projectService.getProjectMembers(pId).subscribe({
       next: (members) => {
-        console.log('Project members for', pId, members);
         this.projectMembers.set(members || []);
+        this.isMembersLoading.set(false);
       },
       error: (err: any) => {
         console.error('Error fetching project members:', err);
         this.projectMembers.set([]);
+        this.isMembersLoading.set(false);
       }
     });
   }
@@ -95,16 +160,12 @@ export class KanbanComponent implements OnInit {
   fetchUserRole(pId: number): void {
     const user = this.authService.currentUser();
     if (user) {
-      console.log('Kanban.fetchUserRole currentUser:', user);
       this.projectService.getUserRoleInProject(pId, user.id).subscribe({
         next: (role) => {
-          console.log('Kanban.fetchUserRole role for project', pId, 'user', user.id, ':', role);
           this.userRole.set(role);
         },
         error: (err: any) => console.error('Error fetching user role:', err)
       });
-    } else {
-      console.log('Kanban.fetchUserRole: no current user');
     }
   }
 
@@ -112,26 +173,33 @@ export class KanbanComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Fetch tasks for this project
-     console.log('Fetching tasks for projectId via TaskService:', pId);
-     this.taskService.getTasksForProject(pId).subscribe({
-       next: (data: Task[] | null) => {
-         console.log('Tasks fetched via TaskService:', data);
-         this.tasks.set(data || []);
-         this.isLoading.set(false);
-       },
-       error: (err: any) => {
-         console.error('Error fetching tasks via TaskService:', err);
-         this.error.set('Impossible de charger les tâches du projet.');
-         this.isLoading.set(false);
-       }
-     });
+    this.taskService.getTasksForProject(pId).subscribe({
+      next: (data: Task[] | null) => {
+        this.tasks.set(data || []);
+        this.isLoading.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error fetching tasks:', err);
+        this.error.set('Impossible de charger les tâches du projet.');
+        this.isLoading.set(false);
+      }
+    });
   }
 
-  // Create task flow (only Owner)
+  // --- Filter actions ---
+  setPriorityFilter(prio: 'all' | 'low' | 'medium' | 'high'): void {
+    this.selectedPriority.set(prio);
+  }
+
+  clearFilters(): void {
+    this.selectedPriority.set('all');
+    this.selectedAssignee.set(null);
+  }
+
+  // --- Create/Edit tasks ---
   openCreateModal(): void {
     const role = this.userRole();
-    if (!(role === 'Owner' || role === 'Admin')) return;
+    if (!(role === 'Owner' || role === 'Admin' || role === 'Collaborator')) return;
     this.editingTaskId.set(null);
     this.taskForm.reset({ title: '', description: '', priority: 'medium', dueDate: '', assignee: null });
     this.showCreateModal.set(true);
@@ -154,7 +222,6 @@ export class KanbanComponent implements OnInit {
 
     const { title, description, priority, dueDate, assignee } = this.taskForm.value;
 
-    // Prevent submitting a past due date
     if (dueDate) {
       const selected = new Date(dueDate);
       selected.setHours(0, 0, 0, 0);
@@ -169,7 +236,6 @@ export class KanbanComponent implements OnInit {
 
     const editingId = this.editingTaskId();
     if (editingId) {
-      // Update existing task
       const updates: Partial<Task> = {
         title,
         description,
@@ -191,7 +257,6 @@ export class KanbanComponent implements OnInit {
         }
       });
     } else {
-      // Create new task
       this.taskService.createTask({
         projectId: pId,
         title,
@@ -215,11 +280,9 @@ export class KanbanComponent implements OnInit {
     }
   }
 
-  // Open modal to edit a task (prefill form)
   openEditModal(task: Task): void {
     const role = this.userRole();
-    // only Owner/Admin can edit
-    if (!(role === 'Owner' || role === 'Admin')) return;
+    if (!(role === 'Owner' || role === 'Admin' || role === 'Collaborator')) return;
     this.editingTaskId.set(task.id);
     this.taskForm.reset({
       title: task.title,
@@ -231,21 +294,29 @@ export class KanbanComponent implements OnInit {
     this.showCreateModal.set(true);
   }
 
-  // Return display name for assignee id
   getAssigneeName(assigneeId?: number): string {
     if (!assigneeId) return 'Non assignée';
     const member = this.projectMembers().find(m => m.userId === assigneeId);
     return member ? `${member.userName}` : 'Utilisateur inconnu';
   }
 
-  // Whether current user can edit a given task
+  getAssigneeInitials(assigneeId?: number): string {
+    if (!assigneeId) return '--';
+    const member = this.projectMembers().find(m => m.userId === assigneeId);
+    if (!member || !member.userName) return 'U';
+    const parts = member.userName.trim().split(/\s+/);
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+
   canEditTaskLocal(task: Task): boolean {
     const user = this.authService.currentUser();
     const userId = user ? user.id : -1;
     return this.taskService.canEditTask(task, this.userRole(), userId);
   }
 
-  // Whether current user can submit changes for the currently editing task
   canSubmitEditing(): boolean {
     const editingId = this.editingTaskId();
     if (!editingId) return true;
@@ -253,11 +324,9 @@ export class KanbanComponent implements OnInit {
     if (!task) return false;
     const user = this.authService.currentUser();
     const userId = user ? user.id : -1;
-    const role = this.userRole();
-    return role === 'Owner' || role === 'Admin';
+    return this.taskService.canEditTask(task, this.userRole(), userId);
   }
 
-  // Delete a task (Owner/Admin only)
   deleteTask(taskId: number): void {
     const role = this.userRole();
     if (!(role === 'Owner' || role === 'Admin')) {
@@ -281,7 +350,64 @@ export class KanbanComponent implements OnInit {
     });
   }
 
-  // Drag & Drop handlers
+  // --- Team Members management inside Équipe tab ---
+  onAddMember(): void {
+    const pId = this.projectId();
+    const email = this.inviteEmail();
+    const role = this.inviteRole();
+    if (!pId || !email) return;
+
+    this.isMembersLoading.set(true);
+    this.memberErrorMessage.set(null);
+
+    this.projectService.addMemberByEmail(pId, email, role).subscribe({
+      next: () => {
+        this.inviteEmail.set('');
+        this.fetchProjectMembers(pId);
+      },
+      error: (err) => {
+        this.memberErrorMessage.set(err.message || "Erreur lors de l'ajout du membre.");
+        this.isMembersLoading.set(false);
+      }
+    });
+  }
+
+  onChangeRole(member: ProjectMember, newRole: ProjectMember['role']): void {
+    if (member.role === 'Owner') {
+      alert("Le rôle du propriétaire du projet ne peut pas être modifié.");
+      return;
+    }
+    this.projectService.updateMemberRole(member.id, newRole).subscribe({
+      next: () => {
+        const pId = this.projectId();
+        if (pId) this.fetchProjectMembers(pId);
+      }
+    });
+  }
+
+  onRemoveMember(member: ProjectMember): void {
+    if (member.role === 'Owner') {
+      alert("Le propriétaire du projet ne peut pas être retiré.");
+      return;
+    }
+    if (!confirm(`Retirer ${member.userName || member.userEmail} du projet ?`)) {
+      return;
+    }
+    this.projectService.removeMember(member.id).subscribe({
+      next: () => {
+        const pId = this.projectId();
+        if (pId) this.fetchProjectMembers(pId);
+      }
+    });
+  }
+
+  isOwner(): boolean {
+    const user = this.authService.currentUser();
+    const proj = this.project();
+    return (user && proj) ? proj.ownerId === user.id : false;
+  }
+
+  // --- Drag & Drop ---
   canDragTaskLocal(task: Task): boolean {
     const role = this.userRole();
     return role === 'Owner' || role === 'Admin' || role === 'Collaborator';
@@ -332,32 +458,27 @@ export class KanbanComponent implements OnInit {
     if (!task) return;
     if (task.status === newStatus) return;
 
-    // optimistic update
     const oldTasks = this.tasks();
     const updatedTasks = oldTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t);
     this.tasks.set(updatedTasks);
 
     this.taskService.updateTaskStatus(taskId, newStatus).subscribe({
       next: (updated) => {
-        // replace task with updated from server
         this.tasks.set(this.tasks().map(t => t.id === updated.id ? updated : t));
       },
       error: (err: any) => {
         console.error('Error updating task status:', err);
         this.error.set('Erreur lors du déplacement de la tâche.');
-        // revert
         this.tasks.set(oldTasks);
       }
     });
     this.draggingTaskId.set(null);
   }
 
-  // Helper to compute CSS class for a task (avoid inline concatenation in template)
   getTaskClass(task: Task): string {
     return `priority-${task.priority || 'medium'}`;
   }
 
-  // Check if current user can add/edit tasks
   get canEdit(): boolean {
     const role = this.userRole();
     return role === 'Owner' || role === 'Admin' || role === 'Collaborator';
