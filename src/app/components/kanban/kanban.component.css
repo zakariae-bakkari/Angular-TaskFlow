@@ -932,3 +932,208 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(246, 248, 251, 0.56);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 1200;
+  padding: 1.25rem;
+}
+
+.modal {
+  width: 100%;
+  max-width: 580px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
+  padding: 2.25rem;
+  box-shadow: 0 30px 70px rgba(31, 48, 76, 0.14);
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  position: relative;
+  box-sizing: border-box;
+  animation: modalEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal h3 {
+  margin: 0 0 1.5rem 0;
+  color: #1d1d1f;
+  font-size: 1.45rem;
+  font-weight: 850;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  color: #68707d;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #ffffff;
+  color: #1d1d1f;
+  transform: rotate(90deg);
+}
+
+.create-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.create-form .form-row.split {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.create-form .form-row.split > div {
+  flex: 1;
+}
+
+.create-form label {
+  color: #3f4652;
+  font-weight: 750;
+  font-size: 0.88rem;
+}
+
+.create-form input,
+.create-form textarea,
+.create-form select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(29, 29, 31, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  color: #1d1d1f;
+  font-size: 0.94rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.create-form input:focus,
+.create-form textarea:focus,
+.create-form select:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+}
+
+.create-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.btn-cancel {
+  min-height: 42px;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(29, 29, 31, 0.1);
+  color: #3f4652;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #ffffff;
+  border-color: rgba(29, 29, 31, 0.15);
+}
+
+.btn-submit {
+  min-height: 42px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background: #0071e3;
+  color: #fff;
+  border: none;
+  font-weight: 850;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(0, 113, 227, 0.18);
+  transition: all 0.2s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(0, 113, 227, 0.24);
+}
+
+.btn-submit[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-delete {
+  min-height: 42px;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.18);
+  color: #b42318;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 59, 48, 0.12);
+}
+
+.create-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230071e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+  padding-right: 2.8rem;
+}
+
+.create-form select option {
+  background: #ffffff;
+  color: #1d1d1f;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
