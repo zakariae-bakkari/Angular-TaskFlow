@@ -6,11 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { Project, ProjectMember } from '../../project.model';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css'
 })
@@ -39,7 +40,9 @@ export class ProjectsComponent implements OnInit {
   protected readonly showEditModal = signal<boolean>(false);
   protected readonly showMembersModal = signal<boolean>(false);
   protected readonly showNotifications = signal<boolean>(false);
+  protected readonly showProfileMenu = signal<boolean>(false);
   protected readonly notificationsList = signal<any[]>([]);
+  
   protected readonly unreadCount = computed(() => this.notificationsList().filter(n => !n.read).length);
 
   // Forms
@@ -65,7 +68,6 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProjects();
-    // preload notifications so unread count is available immediately
     const user = this.authService.currentUser();
     if (user) {
       const notes = this.notificationService.getNotificationsForUser(user.id) || [];
@@ -76,10 +78,8 @@ export class ProjectsComponent implements OnInit {
   loadProjects(): void {
     const user = this.authService.currentUser();
     if (!user) return;
-
     this.isLoading.set(true);
     this.errorMessage.set(null);
-
     this.projectService.getProjectsForUser(user.id).subscribe({
       next: (data) => {
         this.projects.set(data);
@@ -92,7 +92,6 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  // --- CREATE ---
   openCreateModal(): void {
     this.projectForm.reset();
     this.showCreateModal.set(true);
@@ -107,21 +106,15 @@ export class ProjectsComponent implements OnInit {
       this.projectForm.markAllAsTouched();
       return;
     }
-
     const { name, description } = this.projectForm.value;
-    
-    // Check if name already exists (case-insensitive)
     const exists = this.projects().some(p => p.name.toLowerCase() === name.toLowerCase());
     if (exists) {
       this.projectForm.get('name')?.setErrors({ duplicateName: true });
       return;
     }
-
     const user = this.authService.currentUser();
     if (!user) return;
-
     this.isLoading.set(true);
-
     this.projectService.createProject(name, description, user.id).subscribe({
       next: () => {
         this.loadProjects();
@@ -134,9 +127,8 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  // --- EDIT ---
   openEditModal(project: Project, event: Event): void {
-    event.stopPropagation(); // Avoid navigating to board
+    event.stopPropagation();
     this.activeProject.set(project);
     this.editProjectForm.setValue({
       name: project.name,
@@ -156,10 +148,7 @@ export class ProjectsComponent implements OnInit {
       this.editProjectForm.markAllAsTouched();
       return;
     }
-
     const { name, description } = this.editProjectForm.value;
-
-    // Check if name already exists in OTHER projects
     const exists = this.projects().some(p => 
       p.id !== active.id && p.name.toLowerCase() === name.toLowerCase()
     );
@@ -167,9 +156,7 @@ export class ProjectsComponent implements OnInit {
       this.editProjectForm.get('name')?.setErrors({ duplicateName: true });
       return;
     }
-
     this.isLoading.set(true);
-
     this.projectService.updateProject(active.id, name, description).subscribe({
       next: () => {
         this.loadProjects();
@@ -182,11 +169,9 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  // --- DELETE ---
   onDeleteProject(projectId: number, event: Event): void {
-    event.stopPropagation(); // Avoid navigating
+    event.stopPropagation();
     const project = this.projects().find(item => item.id === projectId);
-
     this.confirmDialog.set({
       title: 'Supprimer ce projet ?',
       message: `Le projet "${project?.name || 'sélectionné'}" et ses membres seront supprimés définitivement.`,
@@ -211,7 +196,6 @@ export class ProjectsComponent implements OnInit {
   onToggleCompletion(project: Project, event: Event): void {
     event.stopPropagation();
     const newState = !project.completed;
-    
     this.projectService.toggleProjectCompletion(project.id, newState).subscribe({
       next: () => {
         this.loadProjects();
@@ -222,7 +206,6 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  // --- MEMBERS ---
   openMembersModal(project: Project, event: Event): void {
     event.stopPropagation();
     this.activeProject.set(project);
@@ -234,51 +217,49 @@ export class ProjectsComponent implements OnInit {
   }
 
   toggleNotifications(): void {
+    this.showProfileMenu.set(false);
     const user = this.authService.currentUser();
     if (!user) return;
     const next = !this.showNotifications();
     this.showNotifications.set(next);
     if (next) {
-      // only fetch if we don't already have notifications (avoid replacing enriched messages)
-      if (this.notificationsList().length === 0) {
-        const notes = this.notificationService.getNotificationsForUser(user.id) || [];
-        this.notificationsList.set(notes);
-        // Enrich notifications: if message contains projet "<id>", replace with project name
-        const idRegex = /projet\s+"(\d+)"/i;
-        notes.forEach(n => {
-          const m = (n.message || '').match(idRegex);
-          if (m && m[1]) {
-            const pid = Number(m[1]);
-            this.projectService.getProjectById(pid).subscribe({
-              next: proj => {
-                if (proj && proj.name) {
-                  const updated = this.notificationsList().map(item => item.id === n.id ? { ...item, message: (n.message || '').replace(idRegex, `projet \"${proj.name}\"`) } : item);
-                  this.notificationsList.set(updated);
-                }
-              },
-              error: () => { /* ignore */ }
-            });
-          }
-        });
-      }
+      const notes = this.notificationService.getNotificationsForUser(user.id) || [];
+      this.notificationsList.set(notes);
+      const idRegex = /projet\s+"(\d+)"/i;
+      notes.forEach(n => {
+        const m = (n.message || '').match(idRegex);
+        if (m && m[1]) {
+          const pid = Number(m[1]);
+          this.projectService.getProjectById(pid).subscribe({
+            next: proj => {
+              if (proj && proj.name) {
+                const updated = this.notificationsList().map(item => item.id === n.id ? { ...item, message: (n.message || '').replace(idRegex, `projet \"${proj.name}\"`) } : item);
+                this.notificationsList.set(updated);
+              }
+            },
+            error: () => { /* ignore */ }
+          });
+        }
+      });
     }
+  }
+
+  toggleProfileMenu(): void {
+    this.showNotifications.set(false);
+    this.showProfileMenu.set(!this.showProfileMenu());
   }
 
   markNotificationRead(id: string): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    // update local view first (preserve any enriched message)
     this.notificationsList.set(this.notificationsList().map(n => n.id === id ? { ...n, read: true } : n));
-    // persist
     this.notificationService.markAsRead(user.id, id);
   }
 
   markAllRead(): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    // update local view first
     this.notificationsList.set(this.notificationsList().map(n => ({ ...n, read: true })));
-    // persist
     this.notificationService.markAllRead(user.id);
   }
 
@@ -304,10 +285,8 @@ export class ProjectsComponent implements OnInit {
   onAddMember(): void {
     const project = this.activeProject();
     if (!project || !this.inviteEmail) return;
-
     this.isMembersLoading.set(true);
     this.memberErrorMessage.set(null);
-
     this.projectService.addMemberByEmail(project.id, this.inviteEmail, this.inviteRole).subscribe({
       next: () => {
         this.inviteEmail = '';
@@ -338,7 +317,6 @@ export class ProjectsComponent implements OnInit {
       alert("Le propriétaire du projet ne peut pas être retiré du projet.");
       return;
     }
-
     this.confirmDialog.set({
       title: 'Retirer ce membre ?',
       message: `${member.userName || member.userEmail} perdra son accès à ce projet.`,
@@ -363,12 +341,10 @@ export class ProjectsComponent implements OnInit {
   confirmDestructiveAction(): void {
     const dialog = this.confirmDialog();
     if (!dialog) return;
-
     this.confirmDialog.set(null);
     dialog.action();
   }
 
-  // Helper: check if logged-in user is Owner of the project
   isOwner(project: Project): boolean {
     const user = this.authService.currentUser();
     return user ? project.ownerId === user.id : false;

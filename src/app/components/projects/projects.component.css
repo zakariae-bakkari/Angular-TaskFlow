@@ -86,6 +86,181 @@
   gap: 1.3rem;
 }
 
+/* Profile Dropdown */
+.profile-container {
+  position: relative;
+}
+
+.btn-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem;
+  padding-right: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-profile-trigger:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.btn-profile-trigger .user-details {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.chevron-icon {
+  width: 14px;
+  height: 14px;
+  color: #68707d;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(2, 6, 23, 0.12);
+  z-index: 1000;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.dropdown-header {
+  padding: 0.75rem 1rem;
+}
+
+.dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dropdown-user-info strong {
+  font-size: 0.95rem;
+  color: #1d1d1f;
+  display: block;
+}
+
+.dropdown-user-info span {
+  font-size: 0.8rem;
+  color: #68707d;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin: 0.4rem 0.5rem;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #1d1d1f;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 113, 227, 0.05);
+  color: #0071e3;
+}
+
+.dropdown-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dropdown-item.text-danger {
+  color: #ff3b30;
+}
+
+.dropdown-item.text-danger:hover {
+  background: rgba(255, 59, 48, 0.05);
+  color: #ff3b30;
+}
+
+/* Notifications dropdown */
+.notif-container{ position: relative; }
+.btn-notif-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 50%;
+  background: #ffffff;
+  color: #68707d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.btn-notif-icon:hover {
+  color: #0071e3;
+  border-color: rgba(0, 113, 227, 0.2);
+  background: rgba(0, 113, 227, 0.04);
+}
+.bell-icon { width: 20px; height: 20px; }
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: #ff3b30;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+}
+
+.notif-dropdown{ position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: #fff; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 12px 36px rgba(2,6,23,0.06); border-radius: 10px; z-index: 1400; padding: 0.5rem; }
+.notif-dropdown-header{ display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0.75rem; border-bottom:1px solid rgba(15,23,42,0.04) }
+.notif-scroll{ max-height:320px; overflow:auto; }
+.notif-list{ list-style:none; margin:0; padding:0 }
+.notif-row{ display:flex; gap:0.75rem; align-items:flex-start; padding:0.6rem 0.75rem; border-radius:8px; transition: background 0.12s ease; text-align: left; }
+.notif-row + .notif-row{ border-top:1px solid rgba(15,23,42,0.03) }
+.notif-row.unread{ background: linear-gradient(90deg, rgba(0,113,227,0.04), transparent) }
+.notif-left{ flex:0 0 44px; display:flex; align-items:center; justify-content:center }
+.notif-avatar{ width:40px; height:40px; border-radius:10px; background:#e6eef9; color:#1f2937; display:flex; align-items:center; justify-content:center; font-weight:800 }
+.notif-row.unread .notif-avatar{ background:linear-gradient(135deg,#0071e3,#4facff); color:#fff }
+.notif-body{ flex:1; min-width:0 }
+.notif-title{ font-weight:800; font-size:0.95rem; color:#0f172a; margin: 0; line-height: 1.2; }
+.notif-msg{ color:#334155; font-size:0.95rem; white-space:normal; overflow:visible; margin-top: 2px; }
+.notif-meta{ color:#64748b; font-size:0.72rem; margin-top:0.28rem }
+.notif-actions{ display:flex; align-items:center; margin-left:0.5rem }
+.btn-icon{ background:transparent; border:none; color:#475569; padding:6px 8px; border-radius:6px; cursor:pointer }
+.btn-icon:hover{ background:rgba(2,6,23,0.04) }
+.notif-empty{ padding:0.9rem; text-align:center; color:#64748b }
+.btn-small{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:#374151; padding:0.25rem 0.45rem; border-radius:6px; cursor: pointer; font-size: 0.75rem; }
+
 .user-profile {
   gap: 0.75rem;
 }

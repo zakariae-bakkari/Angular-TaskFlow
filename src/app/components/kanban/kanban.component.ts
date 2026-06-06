@@ -47,19 +47,22 @@ export class KanbanComponent implements OnInit {
   protected readonly editingTaskId = signal<number | null>(null);
   protected readonly originalAssigneeId = signal<number | null>(null);
   protected readonly draggingTaskId = signal<number | null>(null);
+  
+  protected readonly showNotifications = signal<boolean>(false);
+  protected readonly notificationsList = signal<any[]>([]);
+  protected readonly showProfileMenu = signal<boolean>(false);
+
   protected readonly unreadCount = computed(() => {
     return this.notificationsList().filter(n => !n.read).length;
   });
-  protected readonly showNotifications = signal<boolean>(false);
-  protected readonly notificationsList = signal<any[]>([]);
 
   toggleNotifications(): void {
+    this.showProfileMenu.set(false);
     const user = this.authService.currentUser();
     if (!user) return;
     const next = !this.showNotifications();
     this.showNotifications.set(next);
     if (next) {
-      // load notifications and enrich messages with project names when possible
       const notes = this.notificationService.getNotificationsForUser(user.id) || [];
       this.notificationsList.set(notes);
       const idRegex = /projet\s+"(\d+)"/i;
@@ -81,21 +84,22 @@ export class KanbanComponent implements OnInit {
     }
   }
 
+  toggleProfileMenu(): void {
+    this.showNotifications.set(false);
+    this.showProfileMenu.set(!this.showProfileMenu());
+  }
+
   markNotificationRead(id: string): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    // update local view first (preserve enriched messages)
     this.notificationsList.set(this.notificationsList().map(n => n.id === id ? { ...n, read: true } : n));
-    // persist
     this.notificationService.markAsRead(user.id, id);
   }
 
   markAllRead(): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    // update local view first
     this.notificationsList.set(this.notificationsList().map(n => ({ ...n, read: true })));
-    // persist
     this.notificationService.markAllRead(user.id);
   }
 
@@ -127,12 +131,10 @@ export class KanbanComponent implements OnInit {
     return list;
   });
 
-  // Computed columns based on filtered tasks
   protected readonly todoTasks = computed(() => this.filteredTasks().filter(t => t.status === 'todo'));
   protected readonly inProgressTasks = computed(() => this.filteredTasks().filter(t => t.status === 'in-progress'));
   protected readonly doneTasks = computed(() => this.filteredTasks().filter(t => t.status === 'done'));
 
-  // Computed Statistics
   protected readonly totalTasksCount = computed(() => this.tasks().length);
   protected readonly completedTasksCount = computed(() => this.tasks().filter(t => t.status === 'done').length);
   protected readonly inProgressTasksCount = computed(() => this.tasks().filter(t => t.status === 'in-progress').length);
@@ -140,6 +142,10 @@ export class KanbanComponent implements OnInit {
   protected readonly progressRate = computed(() => {
     const total = this.totalTasksCount();
     return total > 0 ? Math.round((this.completedTasksCount() / total) * 100) : 0;
+  });
+  protected readonly allTasksDone = computed(() => {
+    const total = this.totalTasksCount();
+    return total === 0 || this.completedTasksCount() === total;
   });
   protected readonly lateTasks = computed(() => {
     const today = new Date();
@@ -179,7 +185,6 @@ export class KanbanComponent implements OnInit {
     } else {
       this.router.navigate(['/projects']);
     }
-    // preload global notifications so unreadCount is accurate immediately
     const user = this.authService.currentUser();
     if (user) {
       const notes = this.notificationService.getNotificationsForUser(user.id) || [];
@@ -217,7 +222,6 @@ export class KanbanComponent implements OnInit {
     });
   }
 
-
   fetchUserRole(pId: number): void {
     const user = this.authService.currentUser();
     if (user) {
@@ -230,11 +234,9 @@ export class KanbanComponent implements OnInit {
     }
   }
 
-  // Create task flow (only Owner)
   fetchTasks(pId: number): void {
     this.isLoading.set(true);
     this.error.set(null);
-
     this.taskService.getTasksForProject(pId).subscribe({
       next: (data: Task[] | null) => {
         this.tasks.set(data || []);
@@ -248,7 +250,6 @@ export class KanbanComponent implements OnInit {
     });
   }
 
-  // --- Filter actions ---
   setPriorityFilter(prio: 'all' | 'low' | 'medium' | 'high'): void {
     this.selectedPriority.set(prio);
   }
@@ -258,8 +259,25 @@ export class KanbanComponent implements OnInit {
     this.selectedAssignee.set(null);
   }
 
-  // --- Create/Edit tasks ---
+  onToggleCompletion(): void {
+    const proj = this.project();
+    if (!proj) return;
+    if (!proj.completed && !this.allTasksDone()) {
+      this.error.set("Toutes les tâches doivent être terminées pour clore le projet.");
+      return;
+    }
+    const newState = !proj.completed;
+    this.projectService.toggleProjectCompletion(proj.id, newState).subscribe({
+      next: (updated) => {
+        this.project.set(updated);
+        this.error.set(null);
+      },
+      error: () => this.error.set('Erreur lors de la mise à jour du statut du projet.')
+    });
+  }
+
   openCreateModal(): void {
+    if (this.project()?.completed) return;
     const role = this.userRole();
     if (!(role === 'Owner' || role === 'Admin' || role === 'Collaborator')) return;
     this.editingTaskId.set(null);
@@ -273,18 +291,14 @@ export class KanbanComponent implements OnInit {
   }
 
   onCreateTask(): void {
-    if (this.taskForm.invalid) {
+    if (this.taskForm.invalid || this.project()?.completed) {
       this.taskForm.markAllAsTouched();
       return;
     }
-
     const pId = this.projectId();
     if (!pId) return;
-
     this.isSaving.set(true);
-
     const { title, description, priority, dueDate, assignee } = this.taskForm.value;
-
     if (dueDate) {
       const selected = new Date(dueDate);
       selected.setHours(0, 0, 0, 0);
@@ -296,23 +310,15 @@ export class KanbanComponent implements OnInit {
         return;
       }
     }
-
     const editingId = this.editingTaskId();
     if (editingId) {
-      const updates: Partial<Task> = {
-        title,
-        description,
-        priority,
-        dueDate,
-        assigneeId: assignee || undefined
-      };
+      const updates: Partial<Task> = { title, description, priority, dueDate, assigneeId: assignee || undefined };
       this.taskService.updateTask(editingId, updates).subscribe({
         next: () => {
           this.isSaving.set(false);
           this.showCreateModal.set(false);
           this.editingTaskId.set(null);
           this.fetchTasks(pId);
-          // Notify new assignee if changed
           const newAssignee = assignee || null;
           const oldAssignee = this.originalAssigneeId();
           if (newAssignee && newAssignee !== oldAssignee) {
@@ -342,7 +348,6 @@ export class KanbanComponent implements OnInit {
           this.isSaving.set(false);
           this.showCreateModal.set(false);
           this.fetchTasks(pId);
-          // Notify assignee if assigned to someone else
           if (assignee && this.authService.currentUser()?.id !== assignee) {
             try {
               const projName = this.project()?.name ?? String(pId);
@@ -385,9 +390,7 @@ export class KanbanComponent implements OnInit {
     const member = this.projectMembers().find(m => m.userId === assigneeId);
     if (!member || !member.userName) return 'U';
     const parts = member.userName.trim().split(/\s+/);
-    if (parts.length > 1) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
+    if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
     return parts[0].substring(0, 2).toUpperCase();
   }
 
@@ -430,16 +433,13 @@ export class KanbanComponent implements OnInit {
     });
   }
 
-  // --- Team Members management inside Équipe tab ---
   onAddMember(): void {
     const pId = this.projectId();
     const email = this.inviteEmail();
     const role = this.inviteRole();
     if (!pId || !email) return;
-
     this.isMembersLoading.set(true);
     this.memberErrorMessage.set(null);
-
     this.projectService.addMemberByEmail(pId, email, role).subscribe({
       next: () => {
         this.inviteEmail.set('');
@@ -470,9 +470,7 @@ export class KanbanComponent implements OnInit {
       alert("Le propriétaire du projet ne peut pas être retiré.");
       return;
     }
-    if (!confirm(`Retirer ${member.userName || member.userEmail} du projet ?`)) {
-      return;
-    }
+    if (!confirm(`Retirer ${member.userName || member.userEmail} du projet ?`)) return;
     this.projectService.removeMember(member.id).subscribe({
       next: () => {
         const pId = this.projectId();
@@ -487,8 +485,8 @@ export class KanbanComponent implements OnInit {
     return (user && proj) ? proj.ownerId === user.id : false;
   }
 
-  // --- Drag & Drop ---
   canDragTaskLocal(task: Task): boolean {
+    if (this.project()?.completed) return false;
     const role = this.userRole();
     return role === 'Owner' || role === 'Admin' || role === 'Collaborator';
   }
@@ -502,9 +500,7 @@ export class KanbanComponent implements OnInit {
     try {
       event.dataTransfer?.setData('text/plain', String(task.id));
       event.dataTransfer!.effectAllowed = 'move';
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }
 
   onDragEnd(_event: DragEvent): void {
@@ -531,17 +527,15 @@ export class KanbanComponent implements OnInit {
     event.preventDefault();
     const el = (event.currentTarget as HTMLElement);
     if (el) el.classList.remove('drag-over');
+    if (this.project()?.completed) return;
     const data = event.dataTransfer?.getData('text/plain');
     if (!data) return;
     const taskId = Number(data);
     const task = this.tasks().find(t => t.id === taskId);
-    if (!task) return;
-    if (task.status === newStatus) return;
-
+    if (!task || task.status === newStatus) return;
     const oldTasks = this.tasks();
     const updatedTasks = oldTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t);
     this.tasks.set(updatedTasks);
-
     this.taskService.updateTaskStatus(taskId, newStatus).subscribe({
       next: (updated) => {
         this.tasks.set(this.tasks().map(t => t.id === updated.id ? updated : t));
@@ -560,6 +554,7 @@ export class KanbanComponent implements OnInit {
   }
 
   get canEdit(): boolean {
+    if (this.project()?.completed) return false;
     const role = this.userRole();
     return role === 'Owner' || role === 'Admin' || role === 'Collaborator';
   }

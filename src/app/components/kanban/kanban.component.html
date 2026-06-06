@@ -3,7 +3,11 @@
   <header class="dashboard-header">
     <div class="header-brand">
       <a routerLink="/projects" class="btn-logo" title="TaskFlow Home">
-        <span class="logo-box">T</span>
+        <div class="logo-circle-small">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="logo-icon-small">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m12 .5a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
         <span class="brand-text">TaskFlow</span>
       </a>
       
@@ -33,19 +37,49 @@
     <!-- USER PROFILE / LOGOUT -->
     <div class="header-actions">
       @if (authService.currentUser(); as user) {
-        <div class="user-profile">
-          <div class="avatar" title="{{ user.name }}">
-            {{ (user.name ? user.name[0] : 'U') | uppercase }}
-          </div>
-          <div class="user-details">
-            <span class="user-name">{{ user.name }}</span>
-            <span class="user-email">{{ user.email }}</span>
-          </div>
+        <div class="profile-container">
+          <button class="btn-profile-trigger" (click)="toggleProfileMenu()" [attr.aria-expanded]="showProfileMenu()">
+            <div class="avatar" title="{{ user.name }}">
+              {{ (user.name ? user.name[0] : 'U') | uppercase }}
+            </div>
+            <div class="user-details">
+              <span class="user-name">{{ user.name }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="chevron-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+
+          @if (showProfileMenu()) {
+            <div class="profile-dropdown fade-in">
+              <div class="dropdown-header">
+                <div class="dropdown-user-info">
+                  <strong>{{ user.name }}</strong>
+                  <span>{{ user.email }}</span>
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a routerLink="/profile" class="dropdown-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.963-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Mon Profil
+              </a>
+              <button (click)="logout()" class="dropdown-item text-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+                Déconnexion
+              </button>
+            </div>
+          }
         </div>
       }
       <div class="notif-container">
-        <button class="btn-profile" (click)="toggleNotifications()" aria-haspopup="true" [attr.aria-expanded]="showNotifications()">
-          Notifications
+        <button class="btn-notif-icon" (click)="toggleNotifications()" aria-haspopup="true" [attr.aria-expanded]="showNotifications()" title="Notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="bell-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7c0-2.015-1.118-3.774-2.766-4.683a2.413 2.413 0 00-4.468 0C9.118 5.276 8 7.035 8 9.05v.7c0 2.218-.81 4.286-2.292 5.892a23.848 23.848 0 005.454 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
           <span *ngIf="unreadCount() > 0" class="notif-badge">{{ unreadCount() }}</span>
         </button>
         <div *ngIf="showNotifications()" class="notif-dropdown" role="menu">
@@ -73,9 +107,6 @@
           </div>
         </div>
       </div>
-      <button (click)="logout()" class="btn-logout" title="Se déconnecter">
-        Déconnexion
-      </button>
     </div>
   </header>
 
@@ -85,7 +116,12 @@
     <!-- SUB-HEADER (Project details) -->
     <div class="project-info-bar">
       <div class="info-left">
-        <h2>{{ project()?.name }}</h2>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h2>{{ project()?.name }}</h2>
+          @if (project()?.completed) {
+            <span class="role-badge-static badge-static-owner" style="font-size: 0.7rem; padding: 0.2rem 0.6rem;">Projet Terminé</span>
+          }
+        </div>
         <p class="project-meta-info">
           {{ totalTasksCount() }} tâches &middot; {{ projectMembers().length }} membres
         </p>
@@ -143,12 +179,23 @@
             </button>
           }
 
-          <!-- CREATE TASK BUTTON -->
-          @if (canEdit) {
-            <button (click)="openCreateModal()" class="btn-create-task">
-              + Nouvelle tâche
-            </button>
-          }
+          <!-- PROJECT ACTIONS -->
+          <div style="display: flex; gap: 0.5rem;">
+            @if (isOwner() || userRole() === 'Admin') {
+              <button (click)="onToggleCompletion()" 
+                class="btn-toggle-completion" 
+                [class.btn-reactivate]="project()?.completed"
+                [title]="project()?.completed ? 'Réactiver le projet' : 'Clore le projet'">
+                {{ project()?.completed ? 'Réactiver' : 'Terminer le projet' }}
+              </button>
+            }
+            
+            @if (canEdit) {
+              <button (click)="openCreateModal()" class="btn-create-task">
+                + Nouvelle tâche
+              </button>
+            }
+          </div>
         </div>
       }
     </div>

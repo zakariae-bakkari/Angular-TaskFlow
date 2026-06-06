@@ -1,12 +1,228 @@
-.profile-page{ padding:2rem; max-width:900px; margin:0 auto; color:#e6edf3 }
-.profile-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem }
-.meta div{ color:#9aa3b2 }
-.stats{ display:flex; gap:1rem; margin-bottom:1.25rem }
-.stat-card{ flex:1; background:rgba(255,255,255,0.02); padding:1rem; border-radius:10px }
-.notifications{ background:rgba(255,255,255,0.02); padding:1rem; border-radius:10px }
-.notif-header{ display:flex; justify-content:space-between; align-items:center }
-.notif-item{ display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; padding:0.75rem 0 }
-.notif-main{ flex:1 }
-.notif-time{ font-size:0.75rem; color:#9aa3b2 }
-.notif-message{ color:#cbd5e1 }
-.notif-actions button{ background:transparent; border:1px solid rgba(255,255,255,0.06); padding:0.35rem 0.6rem; border-radius:6px; color:#cbd5e1 }
+:host {
+  display: block;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(0, 113, 227, 0.14), transparent 26rem),
+    radial-gradient(circle at 86% 8%, rgba(174, 181, 194, 0.32), transparent 23rem),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #f2f5f9 100%);
+  color: #1d1d1f;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+.profile-page {
+  padding: 3rem 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.profile-header h2 {
+  font-size: 2.25rem;
+  font-weight: 850;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-4 { gap: 1rem; }
+
+.btn-back-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  background: #ffffff;
+  color: #68707d;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+}
+
+.btn-back-circle:hover {
+  color: #0071e3;
+  border-color: rgba(0, 113, 227, 0.2);
+  transform: translateX(-2px);
+}
+
+.btn-back-circle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.meta {
+  display: flex;
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(29, 29, 31, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+.meta div {
+  font-size: 0.9rem;
+  color: #68707d;
+}
+
+.meta strong {
+  color: #0071e3;
+  font-size: 1.1rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 24px;
+  padding: 1.75rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(31, 48, 76, 0.05);
+}
+
+.stat-card h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 1.25rem 0;
+  color: #1d1d1f;
+}
+
+.stat-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stat-card li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3f4652;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(29, 29, 31, 0.04);
+}
+
+.notifications {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 24px;
+  padding: 1.75rem;
+  backdrop-filter: blur(16px);
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.notif-header h3 {
+  font-size: 1.2rem;
+  font-weight: 850;
+  margin: 0;
+}
+
+.notif-header button {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  background: #ffffff;
+  color: #0071e3;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notif-header button:hover {
+  background: rgba(0, 113, 227, 0.04);
+  border-color: rgba(0, 113, 227, 0.2);
+}
+
+.notifications ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.notif-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid rgba(29, 29, 31, 0.05);
+  border-radius: 16px;
+  transition: transform 0.15s ease;
+}
+
+.notif-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(31, 48, 76, 0.04);
+}
+
+.notif-main strong {
+  display: block;
+  font-size: 1rem;
+  color: #1d1d1f;
+  margin-bottom: 0.25rem;
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color: #68707d;
+  margin-bottom: 0.5rem;
+}
+
+.notif-message {
+  font-size: 0.9rem;
+  color: #3f4652;
+  line-height: 1.45;
+}
+
+.notif-actions button {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 113, 227, 0.08);
+  color: #0071e3;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
