@@ -1,0 +1,41 @@
+<div class="filter-bar">
+  <div class="filter-group" role="group" aria-label="Filtrer par priorité">
+    <span class="filter-label">Priorité</span>
+    <div class="priority-pills">
+      <button
+        type="button"
+        class="pill pill-all"
+        [class.active]="selectedPriorities().length === 0"
+        (click)="onSelectAll()"
+      >
+        Toutes
+      </button>
+      @for (option of priorityOptions; track option.value) {
+        <button
+          type="button"
+          class="pill"
+          [class]="'pill-' + option.value"
+          [class.active]="isPrioritySelected(option.value)"
+          (click)="onTogglePriority(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="filter-group filter-assignee" role="group" aria-label="Filtrer par membre">
+    <span class="filter-label">Membre</span>
+    <select
+      class="assignee-select"
+      [value]="selectedAssignee()"
+      (change)="onAssigneeChange($any($event.target).value)"
+      aria-label="Filtrer par membre assigné"
+    >
+      <option value="all">Tous les membres</option>
+      @for (member of members(); track member.id) {
+        <option [value]="member.userId">{{ member.userName || 'Utilisateur' }}</option>
+      }
+    </select>
+  </div>
+</div>

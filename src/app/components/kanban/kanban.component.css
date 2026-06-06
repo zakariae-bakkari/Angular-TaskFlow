@@ -406,6 +406,375 @@
   font-weight: 700;
 }
 
+/* ===== Tabs ===== */
+.kanban-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: 2rem;
+  padding: 0.32rem;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 14px 34px rgba(31, 48, 76, 0.07);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+.tab {
+  padding: 0.56rem 1.3rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #3f4652;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tab:hover {
+  color: #0071e3;
+}
+
+.tab.active {
+  background: #0071e3;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(0, 113, 227, 0.24);
+}
+
+/* ===== Filters empty state ===== */
+.filters-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-reset-filters {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: #0071e3;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(0, 113, 227, 0.2);
+}
+
+/* ===== Task card footer / assignee ===== */
+.task-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.task-card-footer:empty {
+  display: none;
+}
+
+.assignee {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.assignee-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(0, 113, 227, 0.18);
+  border-radius: 50%;
+  background: #eaf4ff;
+  color: #0071e3;
+  font-size: 0.72rem;
+  font-weight: 850;
+  flex-shrink: 0;
+}
+
+.assignee-avatar-lg {
+  width: 44px;
+  height: 44px;
+  font-size: 0.95rem;
+}
+
+/* ===== Statistics view ===== */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 52px rgba(31, 48, 76, 0.09);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.stat-card-rate {
+  flex-direction: row;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.rate-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rate-ring::before {
+  content: "";
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.rate-value {
+  position: relative;
+  color: #0071e3;
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.stat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  color: #1d1d1f;
+  font-size: 2.2rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.stat-title {
+  color: #1d1d1f;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.stat-sub {
+  color: #68707d;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.top-member {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.top-member-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-member-name {
+  color: #1d1d1f;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+/* ===== Charts ===== */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.chart-card {
+  padding: 1.5rem;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 52px rgba(31, 48, 76, 0.09);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.chart-card h3 {
+  margin: 0 0 1.25rem;
+  color: #1d1d1f;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+.bar-label {
+  width: 72px;
+  flex-shrink: 0;
+  color: #3f4652;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.bar-track {
+  flex: 1;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(104, 112, 125, 0.12);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  min-width: 2px;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.bar-count {
+  width: 24px;
+  flex-shrink: 0;
+  color: #1d1d1f;
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-align: right;
+}
+
+.bar-status-todo {
+  background: #68707d;
+}
+
+.bar-status-in-progress {
+  background: #0071e3;
+}
+
+.bar-status-done {
+  background: #34c759;
+}
+
+.bar-priority-high {
+  background: #ff3b30;
+}
+
+.bar-priority-medium {
+  background: #ff9500;
+}
+
+.bar-priority-low {
+  background: #34c759;
+}
+
+/* ===== Team view ===== */
+.team-header {
+  margin-bottom: 1.25rem;
+}
+
+.team-header h3 {
+  margin: 0;
+  color: #1d1d1f;
+  font-size: 1.15rem;
+  font-weight: 850;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.team-card {
+  padding: 1.35rem;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 52px rgba(31, 48, 76, 0.09);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.team-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.team-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-name {
+  color: #1d1d1f;
+  font-size: 0.95rem;
+  font-weight: 850;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-email {
+  color: #68707d;
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-card-head .role-badge {
+  margin-left: auto;
+}
+
+.team-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.team-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.team-stat-num {
+  color: #1d1d1f;
+  font-size: 1.3rem;
+  font-weight: 850;
+}
+
+.team-stat-label {
+  color: #68707d;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

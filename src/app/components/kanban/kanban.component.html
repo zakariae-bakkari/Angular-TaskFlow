@@ -38,9 +38,43 @@
 
   <main class="dashboard-main">
     <div class="welcome-banner">
-      <h2>Tableau Kanban : {{ project()?.name }}</h2>
+      <h2>{{ project()?.name }}</h2>
       <p>{{ project()?.description || 'Gestion des tâches du projet.' }}</p>
     </div>
+
+    <!-- TABS -->
+    <nav class="kanban-tabs" role="tablist" aria-label="Navigation du projet">
+      <button
+        type="button"
+        class="tab"
+        role="tab"
+        [class.active]="activeTab() === 'board'"
+        [attr.aria-selected]="activeTab() === 'board'"
+        (click)="selectTab('board')"
+      >
+        Tableau
+      </button>
+      <button
+        type="button"
+        class="tab"
+        role="tab"
+        [class.active]="activeTab() === 'stats'"
+        [attr.aria-selected]="activeTab() === 'stats'"
+        (click)="selectTab('stats')"
+      >
+        Statistiques
+      </button>
+      <button
+        type="button"
+        class="tab"
+        role="tab"
+        [class.active]="activeTab() === 'team'"
+        [attr.aria-selected]="activeTab() === 'team'"
+        (click)="selectTab('team')"
+      >
+        Équipe
+      </button>
+    </nav>
 
     @if (isLoading()) {
       <div class="loading-state">
@@ -53,100 +87,257 @@
         <button (click)="fetchTasks(projectId()!)" class="btn-retry">Réessayer</button>
       </div>
     } @else {
-      <div class="kanban-board">
-        <!-- TODO COLUMN -->
-        <div class="kanban-column">
-          <div class="column-header">
-            <h3>À faire</h3>
-            <span class="badge badge-todo">
-              {{ todoTasks().length }}
-            </span>
-          </div>
-          <div class="tasks-list">
-            @for (task of todoTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
-                }
-              </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche à faire</div>
-            }
-          </div>
-        </div>
 
-        <!-- IN PROGRESS COLUMN -->
-        <div class="kanban-column">
-          <div class="column-header">
-            <h3>En cours</h3>
-            <span class="badge badge-progress">
-              {{ inProgressTasks().length }}
-            </span>
-          </div>
-          <div class="tasks-list">
-            @for (task of inProgressTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
-                }
-              </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche en cours</div>
-            }
-          </div>
-        </div>
+      <!-- ===================== TABLEAU ===================== -->
+      @if (activeTab() === 'board') {
+        <app-filter-bar
+          [members]="members()"
+          [selectedPriorities]="selectedPriorities()"
+          [selectedAssignee]="selectedAssignee()"
+          (priorityToggle)="togglePriority($event)"
+          (allPriorities)="clearPriorities()"
+          (assigneeChange)="setAssignee($event)"
+        />
 
-        <!-- DONE COLUMN -->
-        <div class="kanban-column">
-          <div class="column-header">
-            <h3>Terminé</h3>
-            <span class="badge badge-done">
-              {{ doneTasks().length }}
-            </span>
+        @if (hasActiveFilters() && filteredTasks().length === 0) {
+          <div class="empty-column-text filters-empty">
+            Aucune tâche ne correspond aux filtres sélectionnés.
+            <button type="button" class="btn-reset-filters" (click)="resetFilters()">Réinitialiser les filtres</button>
           </div>
-          <div class="tasks-list">
-            @for (task of doneTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
+        }
+
+        <div class="kanban-board">
+          <!-- TODO COLUMN -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <h3>À faire</h3>
+              <span class="badge badge-todo">{{ todoTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of todoTasks(); track task.id) {
+                <div class="task-card" [class]="'priority-' + task.priority">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="task-card-footer">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    @if (memberName(task.assigneeId); as name) {
+                      <div class="assignee" [title]="name">
+                        <span class="assignee-avatar">{{ initials(name) }}</span>
+                      </div>
+                    }
                   </div>
-                }
-              </div>
-            } @empty {
-              <div class="empty-column-text">Aucune tâche terminée</div>
-            }
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche à faire</div>
+              }
+            </div>
+          </div>
+
+          <!-- IN PROGRESS COLUMN -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <h3>En cours</h3>
+              <span class="badge badge-progress">{{ inProgressTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of inProgressTasks(); track task.id) {
+                <div class="task-card" [class]="'priority-' + task.priority">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="task-card-footer">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    @if (memberName(task.assigneeId); as name) {
+                      <div class="assignee" [title]="name">
+                        <span class="assignee-avatar">{{ initials(name) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche en cours</div>
+              }
+            </div>
+          </div>
+
+          <!-- DONE COLUMN -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <h3>Terminé</h3>
+              <span class="badge badge-done">{{ doneTasks().length }}</span>
+            </div>
+            <div class="tasks-list">
+              @for (task of doneTasks(); track task.id) {
+                <div class="task-card" [class]="'priority-' + task.priority">
+                  <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
+                  <h4>{{ task.title }}</h4>
+                  @if (task.description) {
+                    <p class="task-desc">{{ task.description }}</p>
+                  }
+                  <div class="task-card-footer">
+                    @if (task.dueDate) {
+                      <div class="task-date">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{{ task.dueDate }}</span>
+                      </div>
+                    }
+                    @if (memberName(task.assigneeId); as name) {
+                      <div class="assignee" [title]="name">
+                        <span class="assignee-avatar">{{ initials(name) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-column-text">Aucune tâche terminée</div>
+              }
+            </div>
           </div>
         </div>
-      </div>
+      }
+
+      <!-- ===================== STATISTIQUES ===================== -->
+      @if (activeTab() === 'stats') {
+        <div class="stats-view">
+          <div class="stats-cards">
+            <div class="stat-card stat-card-rate">
+              <div
+                class="rate-ring"
+                [style.background]="'conic-gradient(#0071e3 ' + (completionRate() * 3.6) + 'deg, rgba(0, 113, 227, 0.12) 0deg)'"
+              >
+                <span class="rate-value">{{ completionRate() }}%</span>
+              </div>
+              <div class="stat-meta">
+                <span class="stat-title">Taux d'avancement</span>
+                <span class="stat-sub">{{ completedTasks() }} / {{ totalTasks() }} terminées</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">{{ totalTasks() }}</span>
+              <span class="stat-title">Tâches au total</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-number">{{ inProgressTasks().length }}</span>
+              <span class="stat-title">En cours</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-title">Membre le plus actif</span>
+              @if (mostActiveMember(); as top) {
+                <div class="top-member">
+                  <span class="assignee-avatar">{{ initials(top.member.userName) }}</span>
+                  <div class="top-member-meta">
+                    <span class="top-member-name">{{ top.member.userName }}</span>
+                    <span class="stat-sub">{{ top.inProgress }} tâche(s) en cours</span>
+                  </div>
+                </div>
+              } @else {
+                <span class="stat-sub">Aucune tâche en cours</span>
+              }
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h3>Répartition par statut</h3>
+              @for (item of statusBreakdown(); track item.key) {
+                <div class="bar-row">
+                  <span class="bar-label">{{ item.label }}</span>
+                  <div class="bar-track">
+                    <div
+                      class="bar-fill"
+                      [class]="'bar-status-' + item.key"
+                      [style.width.%]="totalTasks() ? (item.count / totalTasks() * 100) : 0"
+                    ></div>
+                  </div>
+                  <span class="bar-count">{{ item.count }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="chart-card">
+              <h3>Répartition par priorité</h3>
+              @for (item of priorityBreakdown(); track item.key) {
+                <div class="bar-row">
+                  <span class="bar-label">{{ item.label }}</span>
+                  <div class="bar-track">
+                    <div
+                      class="bar-fill"
+                      [class]="'bar-priority-' + item.key"
+                      [style.width.%]="totalTasks() ? (item.count / totalTasks() * 100) : 0"
+                    ></div>
+                  </div>
+                  <span class="bar-count">{{ item.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ===================== ÉQUIPE ===================== -->
+      @if (activeTab() === 'team') {
+        <div class="team-view">
+          <div class="team-header">
+            <h3>Membres du projet ({{ members().length }})</h3>
+          </div>
+          @if (members().length === 0) {
+            <div class="empty-column-text">Aucun membre dans ce projet.</div>
+          } @else {
+            <div class="team-grid">
+              @for (stat of memberStats(); track stat.member.id) {
+                <div class="team-card">
+                  <div class="team-card-head">
+                    <span class="assignee-avatar assignee-avatar-lg">{{ initials(stat.member.userName) }}</span>
+                    <div class="team-card-info">
+                      <span class="team-name">{{ stat.member.userName }}</span>
+                      <span class="team-email">{{ stat.member.userEmail }}</span>
+                    </div>
+                    <span class="role-badge">{{ stat.member.role }}</span>
+                  </div>
+                  <div class="team-card-stats">
+                    <div class="team-stat">
+                      <span class="team-stat-num">{{ stat.total }}</span>
+                      <span class="team-stat-label">Total</span>
+                    </div>
+                    <div class="team-stat">
+                      <span class="team-stat-num">{{ stat.inProgress }}</span>
+                      <span class="team-stat-label">En cours</span>
+                    </div>
+                    <div class="team-stat">
+                      <span class="team-stat-num">{{ stat.done }}</span>
+                      <span class="team-stat-label">Terminé</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
     }
   </main>
 </div>
