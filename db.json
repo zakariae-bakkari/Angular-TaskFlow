@@ -91,16 +91,18 @@
       "status": "done",
       "priority": "high",
       "assigneeId": 1,
-      "dueDate": "2025-05-01"
+      "dueDate": "2025-05-01",
+      "updatedAt": "2026-06-06T13:43:55.452Z"
     },
     {
       "id": 2,
       "projectId": 1,
       "title": "Créer les composants",
-      "status": "in-progress",
+      "status": "todo",
       "priority": "high",
       "assigneeId": 2,
-      "dueDate": "2025-05-10"
+      "dueDate": "2025-05-10",
+      "updatedAt": "2026-06-06T13:43:02.396Z"
     },
     {
       "id": 3,
@@ -109,7 +111,20 @@
       "status": "todo",
       "priority": "medium",
       "assigneeId": 1,
-      "dueDate": "2025-05-20"
+      "dueDate": "2025-05-20",
+      "updatedAt": "2026-06-06T13:43:57.790Z"
+    },
+    {
+      "projectId": 2,
+      "title": "test",
+      "description": "",
+      "priority": "medium",
+      "dueDate": "2026-06-14",
+      "assigneeId": 4,
+      "status": "todo",
+      "createdAt": "2026-06-06T13:43:32.419Z",
+      "updatedAt": "2026-06-06T13:43:36.296Z",
+      "id": 4
     }
   ]
 }
