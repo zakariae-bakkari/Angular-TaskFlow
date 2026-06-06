@@ -2,37 +2,25 @@
   <header class="dashboard-header">
     <div class="header-brand">
       <a routerLink="/projects" class="btn-back" title="Retour aux projets">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-icon">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+        <span class="back-icon" aria-hidden="true">←</span>
+        <span class="back-label">Retour</span>
       </a>
-      <div class="logo-circle-small">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="logo-icon-small">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m12 .5a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
+      <div class="logo-circle-small"></div>
       <h1>TaskFlow : {{ project()?.name }}</h1>
-      @if (userRole()) {
-        <span class="role-badge">{{ userRole() }}</span>
-      }
+      <span *ngIf="userRole()" class="role-badge">{{ userRole() }}</span>
     </div>
-    
+
     <div class="header-actions">
       @if (authService.currentUser(); as user) {
         <div class="user-profile">
-          <div class="avatar">{{ user.name ? user.name[0].toUpperCase() : 'U' }}</div>
+          <div class="avatar">{{ (user.name ? user.name[0] : 'U') | uppercase }}</div>
           <div class="user-details">
             <span class="user-name">{{ user.name }}</span>
             <span class="user-email">{{ user.email }}</span>
           </div>
         </div>
       }
-      <button (click)="logout()" class="btn-logout">
-        <svg xmlns="http://www.w3.org/2000/svg" class="logout-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        <span>Déconnexion</span>
-      </button>
+      <button (click)="logout()" class="btn-logout">Déconnexion</button>
     </div>
   </header>
 
@@ -40,43 +28,43 @@
     <div class="welcome-banner">
       <h2>Tableau Kanban : {{ project()?.name }}</h2>
       <p>{{ project()?.description || 'Gestion des tâches du projet.' }}</p>
+      <button *ngIf="userRole() === 'Owner' || userRole() === 'Admin'" (click)="openCreateModal()" class="btn-create" aria-haspopup="dialog" aria-expanded="false">
+        <span class="btn-icon">+</span>
+        <span class="btn-label">Créer une tâche</span>
+      </button>
     </div>
 
     @if (isLoading()) {
-      <div class="loading-state">
+      <section class="loading-state">
         <span class="spinner-large"></span>
         <p>Chargement des tâches...</p>
-      </div>
+      </section>
     } @else if (error()) {
-      <div class="error-banner">
+      <section class="error-banner">
         <p>{{ error() }}</p>
         <button (click)="fetchTasks(projectId()!)" class="btn-retry">Réessayer</button>
-      </div>
+      </section>
     } @else {
-      <div class="kanban-board">
+      <section class="kanban-board">
         <!-- TODO COLUMN -->
-        <div class="kanban-column">
+        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'todo')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
           <div class="column-header">
             <h3>À faire</h3>
-            <span class="badge badge-todo">
-              {{ todoTasks().length }}
-            </span>
+            <span class="badge badge-todo">{{ todoTasks().length }}</span>
           </div>
           <div class="tasks-list">
-            @for (task of todoTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
+            @for (task of todoTasks();track task.id) {
+              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
                 <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
+                    <h4>{{ task.title }}</h4>
+                    <div class="task-meta">
+                      <small class="assignee">Assigné à: {{ getAssigneeName(task.assigneeId) }}</small>
+                    </div>
+                    @if (task.description) {
                   <p class="task-desc">{{ task.description }}</p>
                 }
                 @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
+                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
                 }
               </div>
             } @empty {
@@ -86,28 +74,21 @@
         </div>
 
         <!-- IN PROGRESS COLUMN -->
-        <div class="kanban-column">
+        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'in-progress')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
           <div class="column-header">
             <h3>En cours</h3>
-            <span class="badge badge-progress">
-              {{ inProgressTasks().length }}
-            </span>
+            <span class="badge badge-progress">{{ inProgressTasks().length }}</span>
           </div>
           <div class="tasks-list">
-            @for (task of inProgressTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
+            @for (task of inProgressTasks();track task.id) {
+              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
                 <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
                 <h4>{{ task.title }}</h4>
                 @if (task.description) {
                   <p class="task-desc">{{ task.description }}</p>
                 }
                 @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
+                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
                 }
               </div>
             } @empty {
@@ -117,28 +98,21 @@
         </div>
 
         <!-- DONE COLUMN -->
-        <div class="kanban-column">
+        <div class="kanban-column" (dragover)="onDragOver($event)" (drop)="onDrop($event,'done')" (dragenter)="onDragEnter($event)" (dragleave)="onDragLeave($event)">
           <div class="column-header">
             <h3>Terminé</h3>
-            <span class="badge badge-done">
-              {{ doneTasks().length }}
-            </span>
+            <span class="badge badge-done">{{ doneTasks().length }}</span>
           </div>
           <div class="tasks-list">
-            @for (task of doneTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
+            @for (task of doneTasks();track task.id) {
+              <div class="task-card" [ngClass]="getTaskClass(task)" [class.dragging]="draggingTaskId() === task.id" (click)="openEditModal(task)" tabindex="0" role="button" [attr.draggable]="canDragTaskLocal(task)" (dragstart)="onDragStart($event, task)" (dragend)="onDragEnd($event)">
                 <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
                 <h4>{{ task.title }}</h4>
                 @if (task.description) {
                   <p class="task-desc">{{ task.description }}</p>
                 }
                 @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
+                  <div class="task-date"><span>{{ task.dueDate }}</span></div>
                 }
               </div>
             } @empty {
@@ -146,7 +120,60 @@
             }
           </div>
         </div>
-      </div>
+
+      </section>
     }
+
+    <!-- Create Task Modal -->
+    <div *ngIf="showCreateModal()" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal">
+        <button class="modal-close" aria-label="Fermer" (click)="closeCreateModal()">×</button>
+        <h3>{{ editingTaskId() ? 'Modifier la tâche' : 'Créer une nouvelle tâche' }}</h3>
+        <form [formGroup]="taskForm" (ngSubmit)="onCreateTask()" class="create-form">
+          <div class="form-row">
+            <label for="title">Titre</label>
+            <input id="title" formControlName="title" />
+          </div>
+          <div class="form-row">
+            <label for="description">Description</label>
+            <textarea id="description" formControlName="description"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="assignee">Assigner à</label>
+            <select id="assignee" formControlName="assignee">
+              <option [ngValue]="null">Aucun</option>
+              <option *ngFor="let m of projectMembers()" [ngValue]="m.userId">{{ m.userName }} ({{ m.role }})</option>
+            </select>
+          </div>
+          <div class="form-row split">
+            <div>
+              <label for="priority">Priorité</label>
+              <select id="priority" formControlName="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div>
+              <label for="dueDate">Date d'échéance</label>
+              <input id="dueDate" type="date" formControlName="dueDate" [attr.min]="minDate" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
+            <button *ngIf="editingTaskId() && (userRole() === 'Owner' || userRole() === 'Admin')" type="button" class="btn-delete" (click)="deleteTask(editingTaskId()!)">Supprimer</button>
+            <button type="submit" class="btn-submit" [disabled]="isSaving() || !canSubmitEditing()">
+              {{ isSaving() ? 'Enregistrement...' : (editingTaskId() ? 'Mettre à jour' : 'Créer') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </main>
 </div>
+
+
+
+
+
