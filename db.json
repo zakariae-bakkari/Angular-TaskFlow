@@ -37,6 +37,12 @@
       "description": null,
       "ownerId": 4,
       "id": 2
+    },
+    {
+      "name": "test",
+      "description": "test",
+      "ownerId": 1,
+      "id": 5
     }
   ],
   "projectMembers": [
@@ -67,8 +73,14 @@
     {
       "projectId": 2,
       "userId": 1,
-      "role": "Collaborator",
+      "role": "Admin",
       "id": 5
+    },
+    {
+      "projectId": 5,
+      "userId": 1,
+      "role": "Owner",
+      "id": 8
     }
   ],
   "tasks": [
