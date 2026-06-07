@@ -233,10 +233,15 @@ export class ProjectsComponent implements OnInit {
       alert("Le rôle du propriétaire du projet ne peut pas être modifié.");
       return;
     }
+    this.isMembersLoading.set(true);
     this.projectService.updateMemberRole(member.id, newRole).subscribe({
       next: () => {
         const project = this.activeProject();
         if (project) this.loadMembers(project.id);
+      },
+      error: (err) => {
+        this.memberErrorMessage.set(err.message || 'Erreur lors de la modification du rôle.');
+        this.isMembersLoading.set(false);
       }
     });
   }
@@ -256,10 +261,15 @@ export class ProjectsComponent implements OnInit {
   }
 
   private removeMember(member: ProjectMember): void {
+    this.isMembersLoading.set(true);
     this.projectService.removeMember(member.id).subscribe({
       next: () => {
         const project = this.activeProject();
         if (project) this.loadMembers(project.id);
+      },
+      error: (err) => {
+        this.memberErrorMessage.set(err.message || 'Erreur lors du retrait du membre.');
+        this.isMembersLoading.set(false);
       }
     });
   }

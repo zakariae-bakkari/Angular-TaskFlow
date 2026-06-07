@@ -26,6 +26,7 @@ export class AuthService {
         try {
           this._currentUser.set(JSON.parse(storedUser));
         } catch (e) {
+          console.error('Failed to parse stored user session, clearing corrupted data:', e);
           localStorage.removeItem('taskflow_user');
         }
       }

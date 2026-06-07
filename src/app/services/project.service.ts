@@ -24,7 +24,10 @@ export class ProjectService {
         // Fetch details of all projects the user is in
         const projectRequests = memberships.map(m =>
           this.http.get<Project>(`${this.projectsUrl}/${m.projectId}`).pipe(
-            catchError(() => of(null)) // Ignore deleted/not found projects
+            catchError(err => {
+              console.warn(`Failed to fetch project ${m.projectId}:`, err.message);
+              return of(null);
+            })
           )
         );
         return forkJoin(projectRequests).pipe(
@@ -93,7 +96,10 @@ export class ProjectService {
               userName: user.name,
               userEmail: user.email
             })),
-            catchError(() => of({ ...m, userName: 'Utilisateur Inconnu', userEmail: '' }))
+            catchError(err => {
+              console.warn(`Failed to fetch user details for userId ${m.userId}:`, err.message);
+              return of({ ...m, userName: 'Utilisateur Inconnu', userEmail: '' });
+            })
           )
         );
         return forkJoin(userRequests);

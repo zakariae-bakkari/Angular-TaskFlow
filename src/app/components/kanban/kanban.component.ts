@@ -58,7 +58,11 @@ export class KanbanComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.projectService.getUserRoleInProject(pId, user.id).subscribe({
-        next: (role) => this.userRole.set(role)
+        next: (role) => this.userRole.set(role),
+        error: (err) => {
+          console.error('Failed to fetch user role:', err.message);
+          this.userRole.set(null);
+        }
       });
     }
   }
