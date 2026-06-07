@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { handleFormSubmission } from '../../shared/utils/form-submission.utils';
 
 @Component({
   selector: 'app-login',
@@ -25,25 +26,15 @@ export class LoginComponent {
   protected readonly isLoading = signal<boolean>(false);
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
     const { email, password } = this.loginForm.value;
 
-    this.authService.login(email, password).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.router.navigate(['/projects']);
-      },
-      error: (err) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(err.message || 'Une erreur est survenue lors de la connexion.');
-      }
+    handleFormSubmission({
+      form: this.loginForm,
+      isLoading: this.isLoading,
+      errorMessage: this.errorMessage,
+      request: () => this.authService.login(email, password),
+      onSuccess: () => this.router.navigate(['/projects']),
+      defaultErrorMessage: 'Une erreur est survenue lors de la connexion.'
     });
   }
 }

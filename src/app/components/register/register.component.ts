@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { handleFormSubmission } from '../../shared/utils/form-submission.utils';
 
 @Component({
   selector: 'app-register',
@@ -51,25 +52,15 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
     const { name, email, password } = this.registerForm.value;
 
-    this.authService.register(name, email, password).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.router.navigate(['/projects']);
-      },
-      error: (err) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(err.message || "Une erreur est survenue lors de l'inscription.");
-      }
+    handleFormSubmission({
+      form: this.registerForm,
+      isLoading: this.isLoading,
+      errorMessage: this.errorMessage,
+      request: () => this.authService.register(name, email, password),
+      onSuccess: () => this.router.navigate(['/projects']),
+      defaultErrorMessage: "Une erreur est survenue lors de l'inscription."
     });
   }
 }

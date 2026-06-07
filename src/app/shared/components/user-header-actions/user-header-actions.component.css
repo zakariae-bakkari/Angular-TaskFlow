@@ -1,0 +1,71 @@
+:host {
+  display: contents;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.3rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0, 113, 227, 0.16);
+  border-radius: 50%;
+  background: #eaf4ff;
+  color: #0071e3;
+  font-size: 0.92rem;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  color: #1d1d1f;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.user-email {
+  color: #68707d;
+  font-size: 0.74rem;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.64rem 1rem;
+  border: 1px solid rgba(29, 29, 31, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #3f4652;
+  font-size: 0.84rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.btn-logout:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 59, 48, 0.24);
+  color: #b42318;
+}
+
+.logout-icon {
+  width: 17px;
+  height: 17px;
+}

@@ -6,16 +6,18 @@ import { ProjectService } from '../../services/project.service';
 import { HttpClient } from '@angular/common/http';
 import { Task } from '../../task.model';
 import { Project } from '../../project.model';
+import { UserHeaderActionsComponent } from '../../shared/components/user-header-actions/user-header-actions.component';
+import { TaskCardComponent } from '../../shared/components/task-card/task-card.component';
 
 @Component({
   selector: 'app-kanban',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, UserHeaderActionsComponent, TaskCardComponent],
   templateUrl: './kanban.component.html',
   styleUrl: './kanban.component.css'
 })
 export class KanbanComponent implements OnInit {
-  protected readonly authService = inject(AuthService);
+  private readonly authService = inject(AuthService);
   private readonly projectService = inject(ProjectService);
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
@@ -84,10 +86,5 @@ export class KanbanComponent implements OnInit {
   get canEdit(): boolean {
     const role = this.userRole();
     return role === 'Owner' || role === 'Admin' || role === 'Collaborator';
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

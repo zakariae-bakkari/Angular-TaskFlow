@@ -5,11 +5,12 @@ import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { Project, ProjectMember } from '../../project.model';
 import { CommonModule } from '@angular/common';
+import { UserHeaderActionsComponent } from '../../shared/components/user-header-actions/user-header-actions.component';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, UserHeaderActionsComponent],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css'
 })
@@ -284,10 +285,5 @@ export class ProjectsComponent implements OnInit {
 
   navigateToBoard(projectId: number): void {
     this.router.navigate(['/projects', projectId, 'kanban']);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

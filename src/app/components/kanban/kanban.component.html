@@ -17,23 +17,7 @@
       }
     </div>
     
-    <div class="header-actions">
-      @if (authService.currentUser(); as user) {
-        <div class="user-profile">
-          <div class="avatar">{{ user.name ? user.name[0].toUpperCase() : 'U' }}</div>
-          <div class="user-details">
-            <span class="user-name">{{ user.name }}</span>
-            <span class="user-email">{{ user.email }}</span>
-          </div>
-        </div>
-      }
-      <button (click)="logout()" class="btn-logout">
-        <svg xmlns="http://www.w3.org/2000/svg" class="logout-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        <span>Déconnexion</span>
-      </button>
-    </div>
+    <app-user-header-actions />
   </header>
 
   <main class="dashboard-main">
@@ -64,21 +48,7 @@
           </div>
           <div class="tasks-list">
             @for (task of todoTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
-                }
-              </div>
+              <app-task-card [task]="task" />
             } @empty {
               <div class="empty-column-text">Aucune tâche à faire</div>
             }
@@ -95,21 +65,7 @@
           </div>
           <div class="tasks-list">
             @for (task of inProgressTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
-                }
-              </div>
+              <app-task-card [task]="task" />
             } @empty {
               <div class="empty-column-text">Aucune tâche en cours</div>
             }
@@ -126,21 +82,7 @@
           </div>
           <div class="tasks-list">
             @for (task of doneTasks(); track task.id) {
-              <div class="task-card" [class]="'priority-' + task.priority">
-                <div class="task-priority-tag">{{ task.priority || 'medium' }}</div>
-                <h4>{{ task.title }}</h4>
-                @if (task.description) {
-                  <p class="task-desc">{{ task.description }}</p>
-                }
-                @if (task.dueDate) {
-                  <div class="task-date">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="date-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ task.dueDate }}</span>
-                  </div>
-                }
-              </div>
+              <app-task-card [task]="task" />
             } @empty {
               <div class="empty-column-text">Aucune tâche terminée</div>
             }
