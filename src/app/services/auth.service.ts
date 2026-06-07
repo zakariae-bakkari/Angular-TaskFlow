@@ -54,7 +54,7 @@ export class AuthService {
         if (users.length > 0) {
           return throwError(() => new Error('Cet email est déjà utilisé.'));
         }
-        const newUser: Omit<User, 'id'> = { name, email, password };
+        const newUser = { name, email, password };
         return this.http.post<User>(this.apiUrl, newUser).pipe(
           map(user => {
             this.saveSession(user);
@@ -73,9 +73,10 @@ export class AuthService {
   }
 
   private saveSession(user: User): void {
+    const { password: _, ...safeUser } = user;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem('taskflow_user', JSON.stringify(user));
+      localStorage.setItem('taskflow_user', JSON.stringify(safeUser));
     }
-    this._currentUser.set(user);
+    this._currentUser.set(safeUser);
   }
 }

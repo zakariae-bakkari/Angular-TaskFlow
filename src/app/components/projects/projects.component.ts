@@ -39,12 +39,12 @@ export class ProjectsComponent implements OnInit {
 
   // Forms
   protected readonly projectForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     description: ['', [Validators.maxLength(500)]]
   });
 
   protected readonly editProjectForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     description: ['', [Validators.maxLength(500)]]
   });
 
